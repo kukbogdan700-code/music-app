@@ -5,17 +5,101 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { background: #0f0f0f; color: white; font-family: sans-serif; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        .search-box { display: flex; width: 100%; max-width: 400px; gap: 10px; margin-bottom: 20px; }
-        input { flex: 1; padding: 12px; border-radius: 10px; background: #1a1a1a; color: white; border: 1px solid #333; }
-        button { background: #ff5500; color: white; border: none; padding: 12px 20px; border-radius: 10px; cursor: pointer; }
-        #results { width: 100%; max-width: 400px; }
+        body { 
+            background: #0f0f0f; 
+            color: white; 
+            font-family: sans-serif; 
+            padding: 20px; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            margin: 0;
+        }
+        .search-box { 
+            display: flex; 
+            width: 100%; 
+            max-width: 400px; 
+            gap: 10px; 
+            margin-bottom: 20px; 
+        }
+        input { 
+            flex: 1; 
+            padding: 12px; 
+            border-radius: 10px; 
+            background: #1a1a1a; 
+            color: white; 
+            border: 1px solid #333; 
+            outline: none;
+        }
+        input:focus {
+            border-color: #0088cc;
+        }
+        button { 
+            background: #0088cc; 
+            color: white; 
+            border: none; 
+            padding: 12px 20px; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #006699;
+        }
+        #results { 
+            width: 100%; 
+            max-width: 400px; 
+        }
+        .track {
+            background: #1a1a1a;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 12px;
+            border: 1px solid #333;
+        }
+        .track-info {
+            margin-bottom: 10px;
+        }
+        .track-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #fff;
+        }
+        .track-artist {
+            font-size: 14px;
+            color: #888;
+            margin-top: 4px;
+        }
+        audio {
+            width: 100%;
+            height: 40px;
+            border-radius: 20px;
+        }
+        audio::-webkit-media-controls-panel {
+            background: #2a2a2a;
+        }
+        .loading {
+            color: #ffaa00;
+            text-align: center;
+            padding: 20px;
+        }
+        .error {
+            color: #ff4444;
+            text-align: center;
+            padding: 20px;
+        }
+        .info {
+            color: #888;
+            text-align: center;
+            padding: 20px;
+        }
     </style>
 </head>
 <body>
-    <h2 style="color: #0088cc;">Pulse Vibe</h2>
+    <h2 style="color: #0088cc; margin-bottom: 20px;">🎵 Pulse Vibe</h2>
     <div class="search-box">
-        <input type="text" id="searchInput" placeholder="Напиши test...">
+        <input type="text" id="searchInput" placeholder="Введите название трека или исполнителя..." value="test">
         <button onclick="searchMusic()">Найти</button>
     </div>
     <div id="results"></div>
@@ -23,32 +107,99 @@
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
+        tg.ready();
+
+        let currentAudio = null;
 
         async function searchMusic() {
-            const query = document.getElementById('searchInput').value;
-            const res = document.getElementById('results');
-            if (!query) return;
+            const query = document.getElementById('searchInput').value.trim();
+            const resultsDiv = document.getElementById('results');
+            
+            if (!query) {
+                resultsDiv.innerHTML = '<div class="info">Введите название трека</div>';
+                return;
+            }
 
-            // Сразу меняем текст, чтобы увидеть, что кнопка ЖИВАЯ
-            res.innerHTML = '<p style="color: orange;">Связь с сервером...</p>';
+            // Показываем загрузку
+            resultsDiv.innerHTML = '<div class="loading">🔍 Поиск музыки...</div>';
 
             try {
-                const url =     `https://music-app-bnm4.onrender.com/search?q=${encodeURIComponent(query)}`;
-                const response = await fetch(url);
-                const data = await response.json();
+                // Добавляем таймаут для долгого запуска сервера
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 секунд таймаут
+                
+                const url = https://music-app-bnm4.onrender.com/search?q=${encodeURIComponent(query)};
+                const response = await fetch(url, { signal: controller.signal });
+                
+                clearTimeout(timeoutId);
 
-                res.innerHTML = '';
+                if (!response.ok) {
+                    throw new Error(HTTP error! status: ${response.status});
+                }
+const data = await response.json();
+                
+                // Очищаем результаты
+                resultsDiv.innerHTML = '';
+
+                // Проверяем, что данные есть
+                if (!data || data.length === 0) {
+                    resultsDiv.innerHTML = '<div class="info">😕 Ничего не найдено</div>';
+                    return;
+                }
+
+                // Отображаем каждый трек
                 data.forEach(track => {
-                    res.innerHTML += 
-                        <div style="background:#1a1a1a; padding:10px; margin-bottom:5px; border-radius:8px;">
-                            <strong>${track.title}</strong><br>
-                            <small>${track.artist}</small>
-                        </div>;
+                    const trackDiv = document.createElement('div');
+                    trackDiv.className = 'track';
+                    
+                    // Создаем HTML для трека
+                    trackDiv.innerHTML = 
+                        <div class="track-info">
+                            <div class="track-title">🎵 ${track.title || 'Без названия'}</div>
+                            <div class="track-artist">👤 ${track.artist || 'Неизвестный исполнитель'}</div>
+                        </div>
+                        <audio controls preload="none">
+                            <source src="${track.url}" type="audio/mpeg">
+                            Ваш браузер не поддерживает аудио
+                        </audio>
+                    ;
+                    
+                    resultsDiv.appendChild(trackDiv);
                 });
+
+                // Добавляем обработчик для остановки предыдущего аудио
+                document.querySelectorAll('audio').forEach(audio => {
+                    audio.addEventListener('play', function() {
+                        if (currentAudio && currentAudio !== this) {
+                            currentAudio.pause();
+                            currentAudio.currentTime = 0;
+                        }
+                        currentAudio = this;
+                    });
+                });
+
             } catch (e) {
-                res.innerHTML = '<p style="color: red;">Сервер спит. Нажми еще раз через 15 сек.</p>';
+                if (e.name === 'AbortError') {
+                    resultsDiv.innerHTML = '<div class="error">⏳ Сервер запускается. Попробуйте еще раз через 30 секунд</div>';
+                } else {
+                    console.error('Ошибка:', e);
+                    resultsDiv.innerHTML = '<div class="error">❌ Ошибка загрузки. Проверьте подключение к интернету</div>';
+                }
             }
         }
+
+        // Автоматически выполняем поиск при загрузке страницы (для демонстрации)
+        window.addEventListener('load', () => {
+            // Можно раскомментировать для авто-поиска при загрузке
+            // setTimeout(searchMusic, 500);
+        });
+
+        // Поиск по нажатию Enter
+        document.getElementById('searchInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                searchMusic();
+            }
+        });
     </script>
 </body>
 </html>
