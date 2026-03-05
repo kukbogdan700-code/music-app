@@ -5,57 +5,60 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { 
-            background: #0f0f0f; 
-            color: #ffffff; 
-            font-family: 'Segoe UI', sans-serif; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center; 
-            height: 100vh; 
-            margin: 0; 
-        }
-        h1 { color: #0088cc; margin-bottom: 10px; }
-        .player-card {
-            background: #1a1a1a;
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            text-align: center;
-        }
-        audio { margin: 20px 0; filter: invert(100%); }
-        .status { font-size: 0.9em; color: #888; margin-bottom: 20px; }
-        button { 
-            background: #0088cc; 
-            color: white; 
-            border: none; 
-            padding: 12px 25px; 
-            border-radius: 10px; 
-            font-weight: bold;
-            cursor: pointer; 
-        }
+        body { background: #0f0f0f; color: white; font-family: sans-serif; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .search-box { display: flex; width: 100%; max-width: 400px; gap: 10px; margin-bottom: 20px; }
+        input { flex: 1; padding: 12px; border-radius: 10px; border: 1px solid #333; background: #1a1a1a; color: white; }
+        button { background: #ff5500; color: white; border: none; padding: 12px 20px; border-radius: 10px; font-weight: bold; cursor: pointer; }
+        .results { width: 100%; max-width: 400px; }
+        .track { background: #1a1a1a; padding: 10px; border-radius: 10px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; }
+        .track-info { display: flex; flex-direction: column; }
+        .play-btn { background: #0088cc; padding: 5px 15px; font-size: 0.8em; }
+        audio { width: 100%; margin-top: 20px; border-radius: 10px; }
     </style>
 </head>
 <body>
-
-    <div class="player-card">
-        <h1>Pulse Vibe 🎧</h1>
-        <div class="status">Тестовый режим плеера</div>
-        
-        <audio controls>
-            <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
-            Ваш браузер не поддерживает аудио.
-        </audio>
-
-        <br>
-        <button onclick="window.Telegram.WebApp.close()">Закрыть приложение</button>
+    <h1>Pulse Vibe 🎧</h1>
+    
+    <div class="search-box">
+        <input type="text" id="searchInput" placeholder="Поиск в SoundCloud...">
+        <button onclick="searchMusic()">Найти</button>
     </div>
 
+    <div id="results" class="results">
+        </div>
+
+    <audio id="audioPlayer" controls style="display:none;"></audio>
+
     <script>
-        // Инициализация Telegram Web App
         const tg = window.Telegram.WebApp;
-        tg.expand(); // Развернуть на весь экран
+        tg.expand();
+
+        function searchMusic() {
+            const query = document.getElementById('searchInput').value;
+            if (!query) return;
+
+            const resultsContainer = document.getElementById('results');
+            resultsContainer.innerHTML = '<p>Ищем...</p>';
+
+            // ВНИМАНИЕ: Здесь мы позже подключим твой сервер (Backend)
+            // Пока это имитация, чтобы ты увидел интерфейс
+            resultsContainer.innerHTML = 
+                <div class="track">
+                    <div class="track-info">
+                        <strong>Test Track (SoundCloud style)</strong>
+                        <span>Artist Name</span>
+                    </div>
+                    <button class="play-btn" onclick="playTrack()">Play</button>
+                </div>
+            ;
+        }
+
+        function playTrack() {
+            const player = document.getElementById('audioPlayer');
+            player.style.display = 'block';
+            player.src = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3';
+            player.play();
+        }
     </script>
 </body>
 </html>
