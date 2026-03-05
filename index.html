@@ -64,17 +64,6 @@
                     html += '</div>';
                     res.innerHTML += html;
                 }
-            } catch (error) {
-                res.innerHTML = '<p style="color: red;">Сервер не отвечает. Проверьте Render.com</p>';
-            }
-        }
-
-        function playTrack(url) {
-            var player = document.getElementById('audioPlayer');
-            player.style.display = 'block';
-            player.src = url;
-            player.play();
-        }
-    </script>
+            
 </body>
 </html>
