@@ -13,24 +13,23 @@ app.add_middleware(
 
 @app.get("/search")
 async def search(q: str):
-    # Мы используем публичный API SoundCloud через сторонний сервис для простоты
-    search_url = f"https://api-v2.soundcloud.com/search/tracks?q={q}&client_id=YOUR_CLIENT_ID&limit=5"
-    
-    # Пока мы настраиваем, я дам тебе временный рабочий поиск через открытый источник
-    # Чтобы ты сразу увидел результат в боте:
-    return [
+    # Это временный "умный" поиск. 
+    # Он имитирует выдачу разных треков в зависимости от твоего запроса.
+    # Скоро мы подключим сюда прямой парсер SoundCloud!
+    tracks = [
         {
-            "title": f"{q} - Трек найден!",
-            "artist": "Pulse Vibe Engine",
+            "title": f"{q.capitalize()} - Remix 2024",
+            "artist": "SoundCloud Artist",
             "url": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
         },
         {
-            "title": f"Deep House Mix ({q})",
-            "artist": "SoundCloud Stream",
+            "title": f"{q.capitalize()} - Original Mix",
+            "artist": "Pulse Vibe Studio",
             "url": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3"
         }
     ]
+    return tracks
 
 @app.get("/")
 async def root():
-    return {"status": "Pulse Vibe Server is Live"}
+    return {"message": "Pulse Vibe Server is Online"}
