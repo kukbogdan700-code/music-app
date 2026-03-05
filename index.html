@@ -10,110 +10,220 @@
             color: white;
             font-family: Arial, sans-serif;
             padding: 20px;
-            text-align: center;
         }
-        .card {
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        .step {
             background: #1a1a1a;
-            border-radius: 16px;
-            padding: 30px 20px;
-            margin: 20px 0;
-            border: 2px solid #333;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid #333;
         }
+        .step.success { border-left-color: #00cc66; }
+        .step.error { border-left-color: #ff4444; }
+        .step.waiting { border-left-color: #ffaa00; }
+        
         button {
             background: #0088cc;
             color: white;
             border: none;
-            padding: 15px 30px;
-            font-size: 20px;
-            border-radius: 12px;
-            margin: 10px;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 16px;
+            margin: 5px;
             cursor: pointer;
-            width: 200px;
-            font-weight: bold;
+            width: 100%;
         }
-        button:hover {
-            background: #006699;
+        button.small {
+            width: auto;
+            padding: 8px 15px;
+            font-size: 14px;
         }
-        .counter {
-            font-size: 48px;
-            font-weight: bold;
-            color: #ff5500;
-            margin: 20px;
+        input {
+            padding: 12px;
+            width: 100%;
+            box-sizing: border-box;
+            border-radius: 8px;
+            background: #1a1a1a;
+            color: white;
+            border: 1px solid #333;
+            margin-bottom: 10px;
+            font-size: 16px;
         }
-        .test-area {
+        .log {
+            background: #000;
+            color: #0f0;
+            font-family: monospace;
+            padding: 10px;
+            border-radius: 8px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-size: 12px;
+            white-space: pre-wrap;
+        }
+        .result-track {
             background: #222;
-            padding: 20px;
-            border-radius: 12px;
-            margin-top: 30px;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
         }
     </style>
 </head>
 <body>
-    <h1>🔧 ТЕСТОВЫЙ РЕЖИМ</h1>
-    
-    <div class="card">
-        <h2>Проверка кнопок</h2>
+    <div class="container">
+        <h1>🎵 Pulse Vibe - Диагностика музыки</h1>
         
-        <div class="counter" id="counter">0</div>
-        
-        <button onclick="increment()">➕ НАЖМИ МЕНЯ</button>
-        <button onclick="resetCounter()">🔄 Сброс</button>
-        
-        <div class="test-area" id="testResult">
-            Нажми на оранжевую кнопку 👆
+        <div class="step" id="step1">
+            <h3>📡 Шаг 1: Проверка сервера</h3>
+            <button class="small" onclick="testServer()">Проверить соединение</button>
+            <div id="serverResult">Не проверялось</div>
         </div>
-    </div>
-
-    <div style="margin-top: 30px;">
-        <button onclick="testAlert()">🔔 Тест alert</button>
-        <button onclick="testConsole()">📝 Тест console</button>
+        
+        <div class="step" id="step2">
+            <h3>🔍 Шаг 2: Поиск музыки</h3>
+            <input type="text" id="searchQuery" value="test" placeholder="Введите запрос">
+            <button onclick="searchMusic()">Найти музыку</button>
+            <div id="searchResult"></div>
+        </div>
+        
+        <div class="step" id="step3">
+            <h3>📦 Шаг 3: Результаты</h3>
+            <div id="tracksResult"></div>
+        </div>
+        
+        <div class="log" id="debugLog">Жду действий...</div>
     </div>
 
     <script>
-        // ПРОСТЕЙШАЯ ПРОВЕРКА - запускается ли вообще JS
-        console.log('🚀 Скрипт запущен!');
+        const tg = window.Telegram.WebApp;
+        tg.expand();
         
-        // Показываем приветствие
-        document.getElementById('testResult').innerHTML = '✅ JavaScript работает! ' + new Date().toLocaleTimeString();
-        
-        let count = 0;
-        
-        function increment() {
-            count++;
-            document.getElementById('counter').innerText = count;
-            document.getElementById('testResult').innerHTML = '✅ Кнопка нажата! Счёт: ' + count;
-            console.log('Кнопка нажата, счёт:', count);
-            
-            // Меняем цвет на секунду
-            document.querySelector('.card').style.borderColor = '#ff5500';
-            setTimeout(() => {
-                document.querySelector('.card').style.borderColor = '#333';
-            }, 200);
+        function log(message) {
+            const logDiv = document.getElementById('debugLog');
+            logDiv.innerHTML += '\n' + '> ' + message;
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(message);
         }
         
-        function resetCounter() {
-            count = 0;
-            document.getElementById('counter').innerText = count;
-            document.getElementById('testResult').innerHTML = '🔄 Счёт сброшен';
-        }
-        
-        function testAlert() {
-            alert('🟢 Alert работает!');
-        }
-        
-        function testConsole() {
-            console.log('📝 Сообщение в консоль');
-            document.getElementById('testResult').innerHTML = '📝 Проверь консоль (F12)';
+        function setStepStatus(stepId, status, message) {
+            const step = document.getElementById(stepId);
+            step.className = 'step ' + status;
+            document.getElementById(stepId + 'Result').innerHTML = message;
         }
 
-        // Проверка Telegram WebApp
-        if (window.Telegram && window.Telegram.WebApp) {
-            const tg = window.Telegram.WebApp;
-            tg.expand();
-            document.getElementById('testResult').innerHTML += '<br>🟢 Telegram WebApp подключен';
-        } else {
-            document.getElementById('testResult').innerHTML += '<br>🔴 Telegram WebApp НЕ найден (это нормально при тесте в браузере)';
+        // Шаг 1: Проверка сервера
+        async function testServer() {
+            log('🔄 Проверка сервера...');
+            setStepStatus('step1', 'waiting', 'Проверяю...');
+            
+            try {
+                const startTime = Date.now();
+                const response = await fetch('https://music-app-bnm4.onrender.com', {
+json
+.json
+41.0B
+mode: 'cors',
+                    cache: 'no-cache'
+                });
+                const time = Date.now() - startTime;
+                
+                const text = await response.text();
+                log(✅ Сервер ответил за ${time}мс: ${text});
+                
+                if (response.ok) {
+                    setStepStatus('step1', 'success', ✅ Сервер работает! (${time}мс)<br>Ответ: ${text});
+                } else {
+                    setStepStatus('step1', 'error', ❌ Ошибка ${response.status}: ${response.statusText});
+                }
+            } catch (error) {
+                log(❌ Ошибка: ${error.message});
+                setStepStatus('step1', 'error', ❌ Не удалось подключиться: ${error.message});
+            }
         }
+
+        // Шаг 2: Поиск музыки
+        async function searchMusic() {
+            const query = document.getElementById('searchQuery').value;
+            if (!query) {
+                alert('Введите запрос');
+                return;
+            }
+            
+            log(🔄 Поиск: "${query}");
+            setStepStatus('step2', 'waiting', 'Ищу...');
+            document.getElementById('tracksResult').innerHTML = '';
+            
+            try {
+                const url = https://music-app-bnm4.onrender.com/search?q=${encodeURIComponent(query)};
+                log(🌐 URL: ${url});
+                
+                const response = await fetch(url, {
+                    mode: 'cors',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                log(📡 Статус ответа: ${response.status} ${response.statusText});
+                
+                if (!response.ok) {
+                    throw new Error(HTTP ${response.status});
+                }
+                
+                const data = await response.json();
+                log(📦 Получены данные:, data);
+                
+                setStepStatus('step2', 'success', ✅ Найдено треков: ${data.length});
+                
+                // Показываем треки
+                showTracks(data);
+                
+            } catch (error) {
+                log(❌ Ошибка поиска: ${error.message});
+                setStepStatus('step2', 'error', ❌ Ошибка: ${error.message});
+            }
+        }
+
+        // Шаг 3: Отображение треков
+        function showTracks(tracks) {
+            const container = document.getElementById('tracksResult');
+            container.innerHTML = '';
+            
+            if (!tracks || tracks.length === 0) {
+                container.innerHTML = '<div class="result-track">😕 Ничего не найдено</div>';
+                return;
+            }
+            
+            tracks.forEach((track, index) => {
+                const trackDiv = document.createElement('div');
+                trackDiv.className = 'result-track';
+                
+                // Проверяем, какие поля есть в треке
+                const title = track.title  'Без названия';
+                const artist = track.artist  'Неизвестен';
+                const url = track.url  track.file || '';
+                
+                trackDiv.innerHTML = 
+                    <div style="font-weight:bold;">${index + 1}. ${title}</div>
+                    <div style="color:#888; margin:5px 0;">👤 ${artist}</div>
+                    <div style="font-size:12px; color:#555; word-break:break-all;">🔗 ${url}</div>
+                    <audio controls style="width:100%; margin-top:10px;" src="${url}"></audio>
+                ;
+                
+                container.appendChild(trackDiv);
+            });
+            
+            setStepStatus('step3', 'success', ✅ Отображено ${tracks.length} треков);
+        }
+
+        // Автоматическая проверка при загрузке
+        window.addEventListener('load', () => {
+            log('🚀 Диагностика запущена');
+            setTimeout(testServer, 1000);
+        });
     </script>
 </body>
 </html>
