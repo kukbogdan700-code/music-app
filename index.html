@@ -6,21 +6,22 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         body { background: #0f0f0f; color: white; font-family: sans-serif; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        h1 { color: #0088cc; }
         .search-box { display: flex; width: 100%; max-width: 400px; gap: 10px; margin-bottom: 20px; }
-        input { flex: 1; padding: 12px; border-radius: 10px; border: 1px solid #333; background: #1a1a1a; color: white; }
+        input { flex: 1; padding: 12px; border-radius: 10px; border: 1px solid #333; background: #1a1a1a; color: white; outline: none; }
         button { background: #ff5500; color: white; border: none; padding: 12px 20px; border-radius: 10px; font-weight: bold; cursor: pointer; }
         .results { width: 100%; max-width: 400px; }
-        .track { background: #1a1a1a; padding: 10px; border-radius: 10px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; }
+        .track { background: #1a1a1a; padding: 15px; border-radius: 10px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; border: 1px solid #222; }
         .track-info { display: flex; flex-direction: column; }
-        .play-btn { background: #0088cc; padding: 5px 15px; font-size: 0.8em; }
-        audio { width: 100%; margin-top: 20px; border-radius: 10px; }
+        .play-btn { background: #0088cc; padding: 8px 15px; font-size: 0.8em; border-radius: 8px; border: none; color: white; }
+        audio { width: 100%; margin-top: 20px; filter: invert(1); }
     </style>
 </head>
 <body>
     <h1>Pulse Vibe 🎧</h1>
     
     <div class="search-box">
-        <input type="text" id="searchInput" placeholder="Поиск в SoundCloud...">
+        <input type="text" id="searchInput" placeholder="Введите название песни...">
         <button onclick="searchMusic()">Найти</button>
     </div>
 
@@ -38,19 +39,21 @@
             if (!query) return;
 
             const resultsContainer = document.getElementById('results');
-            resultsContainer.innerHTML = '<p>Ищем...</p>';
+            resultsContainer.innerHTML = '<p style="color: #888;">Ищем в SoundCloud...</p>';
 
-            // ВНИМАНИЕ: Здесь мы позже подключим твой сервер (Backend)
-            // Пока это имитация, чтобы ты увидел интерфейс
-            resultsContainer.innerHTML = 
-                <div class="track">
-                    <div class="track-info">
-                        <strong>Test Track (SoundCloud style)</strong>
-                        <span>Artist Name</span>
+            // ВАЖНО: Это визуальная заглушка. 
+            // Когда мы сделаем сервер (Backend), здесь будут реальные песни.
+            setTimeout(() => {
+                resultsContainer.innerHTML = 
+                    <div class="track">
+                        <div class="track-info">
+                            <strong>Пример песни из SoundCloud</strong>
+                            <span style="color: #888; font-size: 0.8em;">Artist Name</span>
+                        </div>
+                        <button class="play-btn" onclick="playTrack()">Слушать</button>
                     </div>
-                    <button class="play-btn" onclick="playTrack()">Play</button>
-                </div>
-            ;
+                ;
+            }, 1000);
         }
 
         function playTrack() {
