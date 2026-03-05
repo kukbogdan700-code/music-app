@@ -1,107 +1,82 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { 
-            background: #0f0f0f; 
-            color: white; 
-            font-family: sans-serif; 
-            padding: 20px; 
-            max-width: 500px;
-            margin: 0 auto;
-        }
-        h1 { color: #0088cc; text-align: center; }
-        .search-box {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        input {
-            flex: 1;
-            padding: 12px;
-            border-radius: 10px;
-            background: #1a1a1a;
-            color: white;
-            border: 1px solid #333;
-        }
-        button {
-            background: #0088cc;
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 10px;
-            cursor: pointer;
-        }
-        .track {
-            background: #1a1a1a;
-            padding: 15px;
-            margin-bottom: 10px;
-            border-radius: 12px;
-        }
-        audio { width: 100%; margin-top: 10px; }
-        .status { color: #ffaa00; text-align: center; padding: 10px; }
+        body { background: #0f0f0f; color: white; font-family: sans-serif; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        h1 { color: #0088cc; margin-bottom: 20px; }
+        .search-box { display: flex; width: 100%; max-width: 400px; gap: 10px; margin-bottom: 20px; }
+        input { flex: 1; padding: 12px; border-radius: 10px; border: 1px solid #333; background: #1a1a1a; color: white; outline: none; }
+        button { background: #ff5500; color: white; border: none; padding: 12px 20px; border-radius: 10px; font-weight: bold; cursor: pointer; }
+        .results { width: 100%; max-width: 400px; }
+        .track { background: #1a1a1a; padding: 15px; border-radius: 10px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; border: 1px solid #222; }
+        .track-info { display: flex; flex-direction: column; }
+        .play-btn { background: #0088cc; padding: 8px 15px; font-size: 0.8em; border-radius: 8px; border: none; color: white; cursor: pointer; }
+        audio { width: 100%; margin-top: 20px; filter: invert(1); }
     </style>
 </head>
 <body>
-    <h1>🎵 Pulse Vibe</h1>
+    <h1>Pulse Vibe 🎧</h1>
     
     <div class="search-box">
-        <input type="text" id="searchInput" placeholder="Введите test..." value="test">
+        <input type="text" id="searchInput" placeholder="Введите название...">
         <button onclick="searchMusic()">Найти</button>
     </div>
-    
-    <div id="status" class="status"></div>
-    <div id="results"></div>
+
+    <div id="results" class="results"></div>
+    <audio id="audioPlayer" controls style="display:none;"></audio>
 
     <script>
-        const tg = window.Telegram.WebApp;
+        var tg = window.Telegram.WebApp;
         tg.expand();
 
         async function searchMusic() {
-            const query = document.getElementById('searchInput').value;
-            const resultsDiv = document.getElementById('results');
-            const statusDiv = document.getElementById('status');
-            
+            var query = document.getElementById('searchInput').value;
+            var res = document.getElementById('results');
             if (!query) return;
-            
-            statusDiv.innerHTML = '🔍 Ищем...';
-            resultsDiv.innerHTML = '';
-            
+
+            res.innerHTML = '<p style="color: #888;">Загрузка...</p>';
+
             try {
-                const url = 'https://music-app-bnm4.onrender.com/search?q=' + encodeURIComponent(query);
+                // Используем обычные одинарные кавычки и плюс для соединения строк
+                var url = 'https://music-app-bnm4.onrender.com/search?q=' + encodeURIComponent(query);
+                var response = await fetch(url);
+                var data = await response.json();
+
+                res.innerHTML = '';
                 
-                const response = await fetch(url);
-                const data = await response.json();
-                
-                statusDiv.innerHTML = '✅ Найдено: ' + data.length + ' треков';
-                
-                if (data.length === 0) {
-                    resultsDiv.innerHTML = '<div class="track">😕 Ничего не найдено</div>';
+                if (!data || data.length === 0) {
+                    res.innerHTML = '<p>Ничего не найдено</p>';
                     return;
                 }
-                
-                for(let i = 0; i < data.length; i++) {
-                    const track = data[i];
-                    resultsDiv.innerHTML += 
-                        '<div class="track">' +
-                            '<div style="font-weight:bold;">' + (track.title || 'Без названия') + '</div>' +
-                            '<div style="color:#888;">' + (track.artist || 'Неизвестен') + '</div>' +
-                            '<audio controls src="' + track.url + '"></audio>' +
-                        '</div>';
+
+                for (var i = 0; i < data.length; i++) {
+                    var track = data[i];
+                    // Собираем HTML через обычные кавычки и плюсы
+                    var html = '';
+                    html += '<div class="track">';
+                    html += '<div class="track-info">';
+                    html += '<strong>' + track.title + '</strong>';
+                    html += '<span style="color: #888; font-size: 0.8em;">' + track.artist + '</span>';
+                    html += '</div>';
+                    html += '<button class="play-btn" onclick="playTrack(\'' + track.url + '\')">Слушать</button>';
+                    html += '</div>';
+                    
+                    res.innerHTML += html;
                 }
-                
             } catch (error) {
-                statusDiv.innerHTML = '❌ Ошибка подключения к серверу';
-                console.error(error);
+                res.innerHTML = '<p style="color: red;">Ошибка: проверьте, запущен ли сервер на Render</p>';
             }
         }
-        
-        window.addEventListener('load', function() {
-            setTimeout(searchMusic, 500);
-        });
+
+        function playTrack(url) {
+            var player = document.getElementById('audioPlayer');
+            player.style.display = 'block';
+            player.src = url;
+            player.play();
+        }
     </script>
 </body>
 </html>
