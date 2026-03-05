@@ -21,18 +21,18 @@
     <h1>Pulse Vibe 🎧</h1>
     
     <div class="search-box">
-        <input type="text" id="searchInput" placeholder="Введите название песни...">
+        <input type="text" id="searchInput" placeholder="Введите название...">
         <button onclick="searchMusic()">Найти</button>
     </div>
 
     <div id="results" class="results"></div>
-
     <audio id="audioPlayer" controls style="display:none;"></audio>
-<script>
+
+    <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-       async function searchMusic() {
+        async function searchMusic() {
             const query = document.getElementById('searchInput').value;
             const resultsContainer = document.getElementById('results');
             if (!query) return;
@@ -40,6 +40,7 @@
             resultsContainer.innerHTML = '<p style="color: #888;">Загрузка...</p>';
 
             try {
+                // Ссылка в обратных кавычках
                 const url = `https://music-app-bnm4.onrender.com/search?q=${encodeURIComponent(query)}`;
                 const response = await fetch(url);
                 const data = await response.json();
@@ -52,8 +53,8 @@
                 }
 
                 data.forEach(track => {
-                    // ЗДЕСЬ БЫЛА ОШИБКА: Добавлены обратные кавычки в начале и конце блока
-                    resultsContainer.innerHTML += 
+                    // Создаем элементы через шаблонную строку
+                    const trackHtml = 
                         <div class="track">
                             <div class="track-info">
                                 <strong>${track.title}</strong>
@@ -62,9 +63,10 @@
                             <button class="play-btn" onclick="playTrack('${track.url}')">Слушать</button>
                         </div>
                     ;
+                    resultsContainer.innerHTML += trackHtml;
                 });
             } catch (error) {
-                resultsContainer.innerHTML = '<p style="color: red;">Ошибка: Сервер Render просыпается. Попробуй еще раз через 15 секунд.</p>';
+                resultsContainer.innerHTML = '<p style="color: red;">Сервер просыпается... Нажми еще раз через 10 сек.</p>';
                 console.error(error);
             }
         }
@@ -76,3 +78,5 @@
             player.play();
         }
     </script>
+</body>
+</html>
