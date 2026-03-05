@@ -5,88 +5,115 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { background: #0f0f0f; color: white; font-family: sans-serif; padding: 20px; }
-        .debug-box { background: #1a1a1a; padding: 10px; border-radius: 8px; margin: 10px 0; font-family: monospace; white-space: pre-wrap; color: #0f0; border: 1px solid #333; }
-        button { background: #0088cc; color: white; border: none; padding: 10px 20px; border-radius: 8px; margin: 5px; }
-        input { padding: 10px; width: 200px; border-radius: 8px; background: #1a1a1a; color: white; border: 1px solid #333; }
+        body {
+            background: #0f0f0f;
+            color: white;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            text-align: center;
+        }
+        .card {
+            background: #1a1a1a;
+            border-radius: 16px;
+            padding: 30px 20px;
+            margin: 20px 0;
+            border: 2px solid #333;
+        }
+        button {
+            background: #0088cc;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 20px;
+            border-radius: 12px;
+            margin: 10px;
+            cursor: pointer;
+            width: 200px;
+            font-weight: bold;
+        }
+        button:hover {
+            background: #006699;
+        }
+        .counter {
+            font-size: 48px;
+            font-weight: bold;
+            color: #ff5500;
+            margin: 20px;
+        }
+        .test-area {
+            background: #222;
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 30px;
+        }
     </style>
 </head>
 <body>
-    <h2>🔧 Pulse Vibe - Диагностика</h2>
+    <h1>🔧 ТЕСТОВЫЙ РЕЖИМ</h1>
     
-    <div>
-        <input id="searchInput" placeholder="Введите test" value="test">
-        <button onclick="testServer()">1️⃣ Проверить сервер</button>
-        <button onclick="searchMusic()">2️⃣ Поиск музыки</button>
+    <div class="card">
+        <h2>Проверка кнопок</h2>
+        
+        <div class="counter" id="counter">0</div>
+        
+        <button onclick="increment()">➕ НАЖМИ МЕНЯ</button>
+        <button onclick="resetCounter()">🔄 Сброс</button>
+        
+        <div class="test-area" id="testResult">
+            Нажми на оранжевую кнопку 👆
+        </div>
     </div>
-    
-    <div id="debug" class="debug-box">Готов к диагностике...</div>
-    <div id="results"></div>
+
+    <div style="margin-top: 30px;">
+        <button onclick="testAlert()">🔔 Тест alert</button>
+        <button onclick="testConsole()">📝 Тест console</button>
+    </div>
 
     <script>
-        const tg = window.Telegram.WebApp;
-        tg.expand();
+        // ПРОСТЕЙШАЯ ПРОВЕРКА - запускается ли вообще JS
+        console.log('🚀 Скрипт запущен!');
         
-        function log(message) {
-            document.getElementById('debug').innerText = message;
-            console.log(message);
-        }
-
-        // Тест 1: Проверка сервера
-        async function testServer() {
-            log('🔄 Проверяем сервер...');
-            try {
-                const response = await fetch('https://music-app-bnm4.onrender.com');
-                const text = await response.text();
-                log(✅ Сервер ответил: ${text});
-            } catch (e) {
-                log(❌ Ошибка: ${e.message});
-            }
-        }
-
-        // Тест 2: Поиск музыки
-        async function searchMusic() {
-            const query = document.getElementById('searchInput').value;
-            const resultsDiv = document.getElementById('results');
+        // Показываем приветствие
+        document.getElementById('testResult').innerHTML = '✅ JavaScript работает! ' + new Date().toLocaleTimeString();
+        
+        let count = 0;
+        
+        function increment() {
+            count++;
+            document.getElementById('counter').innerText = count;
+            document.getElementById('testResult').innerHTML = '✅ Кнопка нажата! Счёт: ' + count;
+            console.log('Кнопка нажата, счёт:', count);
             
-            log(🔄 Ищем: "${query}"...);
-            resultsDiv.innerHTML = '<p>⏳ Загрузка...</p>';
-            
-            try {
-                const url = https://music-app-bnm4.onrender.com/search?q=${encodeURIComponent(query)};
-                log(🌐 URL: ${url});
-                
-                const response = await fetch(url);
-                log(📡 Статус: ${response.status} ${response.statusText});
-                
-                const data = await response.json();
-                log(📦 Данные: ${JSON.stringify(data, null, 2)});
-                
-                if (!data || data.length === 0) {
-                    resultsDiv.innerHTML = '<p>😕 Ничего не найдено</p>';
-                    return;
-                }
-                
-                resultsDiv.innerHTML = data.map(track => 
-                    <div style="background:#1a1a1a; padding:15px; margin:10px 0; border-radius:12px;">
-                        <div style="font-weight:bold;">${track.title || 'Без названия'}</div>
-                        <div style="color:#888;">${track.artist || 'Неизвестен'}</div>
-                        <audio controls src="${track.url}" style="width:100%; margin-top:10px;"></audio>
-                    </div>
-                ).join('');
-                
-                log('✅ Готово!');
-                
-            } catch (e) {
-                log(❌ Ошибка: ${e.message});
-                resultsDiv.innerHTML = <p style="color:red;">Ошибка: ${e.message}</p>;
-            }
+            // Меняем цвет на секунду
+            document.querySelector('.card').style.borderColor = '#ff5500';
+            setTimeout(() => {
+                document.querySelector('.card').style.borderColor = '#333';
+            }, 200);
+        }
+        
+        function resetCounter() {
+            count = 0;
+            document.getElementById('counter').innerText = count;
+            document.getElementById('testResult').innerHTML = '🔄 Счёт сброшен';
+        }
+        
+        function testAlert() {
+            alert('🟢 Alert работает!');
+        }
+        
+        function testConsole() {
+            console.log('📝 Сообщение в консоль');
+            document.getElementById('testResult').innerHTML = '📝 Проверь консоль (F12)';
         }
 
-        // Авто-тест при загрузке
-        window.addEventListener('load', () => {
-            setTimeout(testServer, 1000);
-        });
+        // Проверка Telegram WebApp
+        if (window.Telegram && window.Telegram.WebApp) {
+            const tg = window.Telegram.WebApp;
+            tg.expand();
+            document.getElementById('testResult').innerHTML += '<br>🟢 Telegram WebApp подключен';
+        } else {
+            document.getElementById('testResult').innerHTML += '<br>🔴 Telegram WebApp НЕ найден (это нормально при тесте в браузере)';
+        }
     </script>
 </body>
 </html>
