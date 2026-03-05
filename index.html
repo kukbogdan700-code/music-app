@@ -42,7 +42,7 @@
 
             try {
                 // ТЕПЕРЬ ССЫЛКА В ПРАВИЛЬНЫХ КАВЫЧКАХ (клавиша Ё)
-                const url = https:`//www.google.com/search?q=https://music-app-bnm4.onrender.com/search%3Fq%3D${encodeURIComponent(query)}`;
+                const url = `https://music-app-bnm4.onrender.com/search?q=${encodeURIComponent(query)}`;
                 const response = await fetch(url);
                 const data = await response.json();
 
