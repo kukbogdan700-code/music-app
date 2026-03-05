@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang='ru'>
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <meta charset='utf-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <script src='https://telegram.org/js/telegram-web-app.js'></script>
     <style>
         body { background: #0f0f0f; color: white; font-family: sans-serif; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
         h1 { color: #0088cc; margin-bottom: 20px; }
@@ -20,15 +20,15 @@
 <body>
     <h1>Pulse Vibe 🎧</h1>
     
-    <div class="search-box">
-        <input type="text" id="searchInput" placeholder="Введите название...">
-        <button onclick="searchMusic()">Найти</button>
+    <div class='search-box'>
+        <input type='text' id='searchInput' placeholder='Введите название...'>
+        <button onclick='searchMusic()'>Найти</button>
     </div>
 
-    <div id="results" class="results"></div>
-    <audio id="audioPlayer" controls style="display:none;"></audio>
+    <div id='results' class='results'></div>
+    <audio id='audioPlayer' controls style='display:none;'></audio>
 
-<script>
+    <script>
         var tg = window.Telegram.WebApp;
         tg.expand();
 
@@ -40,7 +40,7 @@
             res.innerHTML = '<p style="color: #888;">Загрузка...</p>';
 
             try {
-                // Используем обычные одинарные кавычки и плюс для соединения строк
+                // Соединяем строки через плюс и одинарные кавычки
                 var url = 'https://music-app-bnm4.onrender.com/search?q=' + encodeURIComponent(query);
                 var response = await fetch(url);
                 var data = await response.json();
@@ -54,7 +54,6 @@
 
                 for (var i = 0; i < data.length; i++) {
                     var track = data[i];
-                    // Собираем HTML через обычные кавычки и плюсы
                     var html = '';
                     html += '<div class="track">';
                     html += '<div class="track-info">';
@@ -66,7 +65,7 @@
                     res.innerHTML += html;
                 }
             } catch (error) {
-                res.innerHTML = '<p style="color: red;">Ошибка: проверьте, запущен ли сервер на Render</p>';
+                res.innerHTML = '<p style="color: red;">Сервер не отвечает. Проверьте Render.com</p>';
             }
         }
 
@@ -79,4 +78,3 @@
     </script>
 </body>
 </html>
-
