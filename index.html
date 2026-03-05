@@ -19,14 +19,11 @@
 </head>
 <body>
     <h1>Pulse Vibe 🎧</h1>
-    
     <div class="search-box">
-        <input type="text" id="searchInput" placeholder="Введите название песни...">
+        <input type="text" id="searchInput" placeholder="Введите название...">
         <button onclick="searchMusic()">Найти</button>
     </div>
-
     <div id="results" class="results"></div>
-
     <audio id="audioPlayer" controls style="display:none;"></audio>
 
     <script>
@@ -35,25 +32,25 @@
 
         async function searchMusic() {
             const query = document.getElementById('searchInput').value;
+            const resultsContainer = document.getElementById('results');
             if (!query) return;
 
-            const resultsContainer = document.getElementById('results');
-            resultsContainer.innerHTML = '<p style="color: #888;">Связь с сервером...</p>';
+            resultsContainer.innerHTML = '<p style="color: #888;">Загрузка...</p>';
 
             try {
-                // ИСПРАВЛЕНО: Добавлены обратные кавычки  
-                const response = await fetch(https://music-app-bnm4.onrender.com/search?q=${encodeURIComponent(query)});
+                // ВАЖНО: Тут используются обратные кавычки (клавиша Ё)
+                const url = https://music-app-bnm4.onrender.com/search?q=${encodeURIComponent(query)};
+                const response = await fetch(url);
                 const data = await response.json();
 
                 resultsContainer.innerHTML = '';
                 
-                if (data.length === 0) {
+                if (!data || data.length === 0) {
                     resultsContainer.innerHTML = '<p>Ничего не найдено</p>';
                     return;
                 }
 
                 data.forEach(track => {
-                    // ИСПРАВЛЕНО: Добавлены обратные кавычки  
                     resultsContainer.innerHTML += 
                         <div class="track">
                             <div class="track-info">
@@ -65,8 +62,7 @@
                     ;
                 });
             } catch (error) {
-                resultsContainer.innerHTML = '<p style="color: red;">Ошибка сервера. Подожди, сервер Render просыпается (до 30 сек).</p>';
-                console.error(error);
+                resultsContainer.innerHTML = <p style="color: red;">Ошибка: Сервер еще спит. Попробуй через 10 секунд.</p>;
             }
         }
 
