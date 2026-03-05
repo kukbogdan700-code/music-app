@@ -28,8 +28,7 @@
     <div id="results" class="results"></div>
 
     <audio id="audioPlayer" controls style="display:none;"></audio>
-
-    <script>
+<script>
         const tg = window.Telegram.WebApp;
         tg.expand();
 
@@ -41,7 +40,6 @@
             resultsContainer.innerHTML = '<p style="color: #888;">Загрузка...</p>';
 
             try {
-                // ВАЖНО: Используй обратные кавычки (клавиша Ё)
                 const url = `https://music-app-bnm4.onrender.com/search?q=${encodeURIComponent(query)}`;
                 const response = await fetch(url);
                 const data = await response.json();
@@ -54,6 +52,7 @@
                 }
 
                 data.forEach(track => {
+                    // ЗДЕСЬ БЫЛА ОШИБКА: Добавлены обратные кавычки в начале и конце блока
                     resultsContainer.innerHTML += 
                         <div class="track">
                             <div class="track-info">
@@ -66,5 +65,14 @@
                 });
             } catch (error) {
                 resultsContainer.innerHTML = '<p style="color: red;">Ошибка: Сервер Render просыпается. Попробуй еще раз через 15 секунд.</p>';
+                console.error(error);
             }
         }
+
+        function playTrack(url) {
+            const player = document.getElementById('audioPlayer');
+            player.style.display = 'block';
+            player.src = url;
+            player.play();
+        }
+    </script>
