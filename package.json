@@ -1,17 +1,13 @@
 {
   "name": "pulse-vibe-server",
   "version": "1.0.0",
-  "description": "SoundCloud music bot for Telegram",
-  "main": "server.js",
   "dependencies": {
     "express": "^4.18.2",
     "axios": "^1.6.0",
-    "cors": "^2.8.5"
+    "cors": "^2.8.5",
+    "ytdl-core": "^4.11.5"
   },
   "scripts": {
     "start": "node server.js"
-  },
-  "engines": {
-    "node": "18.x"
   }
 }
