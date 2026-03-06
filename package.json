@@ -9,6 +9,6 @@
   "dependencies": {
     "express": "^4.18.2",
     "cors": "^2.8.5",
-    "soundcloud-scraper": "^1.2.7"
+    "soundcloud-scraper": "latest"
   }
 }
