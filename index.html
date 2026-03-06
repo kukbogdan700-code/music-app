@@ -34,7 +34,7 @@
 
             try {
                 // Твой актуальный адрес на Render
-                const url = 'https://music-app-bnm4-mne6.onrender.com/search?q=' + encodeURIComponent(query);
+                const url = `https://music-app-bnm4-mne6.onrender.com/search?q=` + encodeURIComponent(query);
                 const response = await fetch(url);
                 const data = await response.json();
 
