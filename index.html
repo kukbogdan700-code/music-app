@@ -6,81 +6,90 @@
     <title>Pulse Vibe</title>
     <style>
         body { font-family: sans-serif; background-color: #1a1a1a; color: white; text-align: center; padding: 20px; }
-        .container { max-width: 400 -px; margin: auto; }
+        .container { max-width: 400px; margin: auto; }
         input { width: 70%; padding: 10px; border-radius: 5px; border: none; }
-        button { padding: 10px; border-radius: 5px; border: none; cursor: pointer; background: #ff9800; color: white; }
+        button { padding: 10px 15px; border-radius: 5px; border: none; cursor: pointer; background: #ff9800; color: white; margin-left: 5px; }
         .track { background: #333; margin-top: 10px; padding: 15px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; text-align: left; }
-        .play-btn { background: #00bcd4; padding: 5px 15px; }
+        .play-btn { background: #00bcd4; padding: 5px 15px; border-radius: 5px; cursor: pointer; border: none; color: white; }
         #results { margin-top: 20px; }
         audio { width: 100%; margin-top: 20px; }
+        .server-status {
+            font-size: 12px;
+            color: #4caf50;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Pulse Vibe 2.0 🎧</h1>
-        <input type="text" id="searchInput" placeholder="Какую музыку ищем?">
+        <div class="server-status" id="serverStatus">✅ Сервер: music-app-bnm4-mne6.onrender.com</div>
+        <input type="text" id="searchInput" placeholder="Какую музыку ищем?" value="test">
         <button onclick="searchMusic()">Найти</button>
         
         <div id="results"></div>
     </div>
 
     <script>
+        // НОВЫЙ адрес вашего сервера
+        const SERVER_URL = 'https://music-app-bnm4-mne6.onrender.com';
+
         async function searchMusic() {
-    const query = document.getElementById('searchInput').value;
-    const res = document.getElementById('results');
-    if (!query) return;
+            const query = document.getElementById('searchInput').value;
+            const res = document.getElementById('results');
+            if (!query) return;
 
-    res.innerHTML = '<p>Загрузка...</p>';
+            res.innerHTML = '<p>🔍 Загрузка...</p>';
 
-    try {
-        // Добавляем случайное число к ссылке, чтобы Telegram НЕ брал старые данные из памяти
-        const url = `https://music-app-bnm4-mne6.onrender.com/search?q=${encodeURIComponent(query)}&t=${Date.now()}`;
-        
-        const response = await fetch(url);
-        
-        if (!response.ok) {
-            throw new Error('Сервер ответил с ошибкой');
+            try {
+                // Используем НОВЫЙ сервер
+                const url = `${SERVER_URL}/search?q=${encodeURIComponent(query)}&t=${Date.now()}`;
+                
+                console.log('Запрос к серверу:', url);
+                
+                const response = await fetch(url);
+                
+                if (!response.ok) {
+                    throw new Error('Сервер ответил с ошибкой: ' + response.status);
+                }
+                
+                const data = await response.json();
+                console.log('Получены данные:', data);
+
+                res.innerHTML = '';
+
+                if (!data || data.length === 0) {
+                    res.innerHTML = '<p>😕 Ничего не найдено</p>';
+                    return;
+                }
+
+                data.forEach(track => {
+                    const trackDiv = document.createElement('div');
+                    trackDiv.className = 'track';
+                    trackDiv.innerHTML = `
+                        <div>
+                            <strong>${track.title || 'Без названия'}</strong><br>
+                            <small style="color: #aaa;">${track.artist || 'Неизвестен'}</small>
+                        </div>
+                        <button class="play-btn" onclick="playTrack('${track.url}')">▶ Слушать</button>
+                    `;
+                    res.appendChild(trackDiv);
+                });
+            } catch (error) {
+                console.error('Ошибка:', error);
+                res.innerHTML = '<p style="color: red;">❌ Ошибка: Сервер не отвечает. Попробуйте через 10 секунд.</p>';
+            }
         }
-        
-        const data = await response.json();
 
-        res.innerHTML = '';
-
-        if (!data || data.length === 0) {
-            res.innerHTML = '<p>Ничего не найдено</p>';
-            return;
+        function playTrack(trackUrl) {
+            let player = document.getElementById('audio-player');
+            if (!player) {
+                player = document.createElement('audio');
+                player.id = 'audio-player';
+                player.controls = true;
+                document.querySelector('.container').appendChild(player);
+            }
+            
+            player.src = trackUrl;
+            player.play();
         }
-
-        data.forEach(track => {
-            const html = `
-                <div class="track">
-                    <div>
-                        <strong>${track.title}</strong><br>
-                        <small style="color: #aaa;">${track.artist}</small>
-                    </div>
-                    <button class="play-btn" onclick="playTrack('${track.url}')">Слушать</button>
-                </div>
-            `;
-            res.insertAdjacentHTML('beforeend', html);
-        });
-    } catch (error) {
-        console.error(error);
-        res.innerHTML = '<p style="color: red;">Ошибка: Сервер не отвечает. Попробуй еще раз через 10 секунд.</p>';
-    }
-}
-       // Найди функцию playTrack в своем index.html и замени её на эту:
-function playTrack(trackUrl) {
-    let player = document.getElementById('audio-player');
-    if (!player) {
-        player = document.createElement('audio');
-        player.id = 'audio-player';
-        player.controls = true;
-        document.querySelector('.container').appendChild(player);
-    }
-    // Теперь мы просим сервер превратить ссылку в музыку
-    player.src =    `https://music-app-bnm4-mne6.onrender.com/stream?url=${encodeURIComponent(trackUrl)}`;
-    player.play();
-}
-    </script>
-</body>
-</html>
