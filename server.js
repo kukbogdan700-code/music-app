@@ -1,38 +1,34 @@
 const express = require('express');
 const cors = require('cors');
+const SoundCloud = require('soundcloud-scraper');
 const app = express();
+const client = new SoundCloud.Client();
 
 app.use(cors());
 
-app.get('/search', (req, res) => {
-    const query = req.query.q || '';
-    console.log('Поиск:', query);
+app.get('/search', async (req, res) => {
+    const query = req.query.q;
+    console.log('Поиск в SoundCloud:', query);
 
-    // Имитация базы данных с реальными MP3 ссылками для теста
-    const musicDatabase = [
-        { 
-            title: "Phonk Drift", 
-            artist: "Drive Music", 
-            url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" 
-        },
-        { 
-            title: "Night City", 
-            artist: "Synthwave", 
-            url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3" 
-        }
-    ];
+    try {
+        // Ищем треки по твоему запросу
+        const results = await client.search(query, 'track');
+        
+        // Берем первые 5 результатов и превращаем их в удобный формат
+        const tracks = results.slice(0, 5).map(track => ({
+            title: track.title,
+            artist: track.author.name,
+            url: track.url // Ссылка на страницу трека
+        }));
 
-    // Если ищут что-то конкретное, подставляем название в результат
-    const results = musicDatabase.map(track => ({
-        title: query + " - " + track.title,
-        artist: track.artist,
-        url: track.url
-    }));
-
-    res.json(results);
+        res.json(tracks);
+    } catch (error) {
+        console.error('Ошибка поиска:', error);
+        res.status(500).json({ error: 'Ошибка при поиске музыки' });
+    }
 });
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log('Сервер с музыкой запущен!');
+    console.log(`Сервер Pulse Vibe на порту ${PORT} готов к поиску!`);
 });
