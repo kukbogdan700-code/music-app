@@ -5,45 +5,64 @@ const app = express();
 
 app.use(cors());
 
-const SOUNDCLOUD_CLIENT_ID = 'zIVNInsmJRApjUZSnEhz56WohoBMdUQU';
+// ВАШ YouTube API ключ
+const YOUTUBE_API_KEY = 'AIzaSyDEGUB8bUNvwElyQEfTGD76tFlUXZrnWpg';
 
-// Поиск треков
+// Поиск музыки на YouTube
 app.get('/search', async (req, res) => {
     const query = req.query.q;
     
-    console.log('🔍 Поиск:', query);
+    if (!query) {
+        return res.json([]);
+    }
+    
+    console.log('🔍 Поиск на YouTube:', query);
     
     try {
-        // Пробуем SoundCloud API
-        const response = await axios.get('https://api-v2.soundcloud.com/search/tracks', {
+        // Ищем видео на YouTube
+        const searchResponse = await axios.get('https://www.googleapis.com/youtube/v3/search', {
             params: {
-                q: query,
-                client_id: SOUNDCLOUD_CLIENT_ID,
-                limit: 10
+                part: 'snippet',
+                q: query + ' music',
+                type: 'video',
+                maxResults: 15,
+                key: YOUTUBE_API_KEY,
+                videoCategoryId: '10' // Музыка
             }
         });
         
-        const tracks = response.data.collection.map(track => ({
-            title: track.title,
-            artist: track.user.username,
-            url: track.permalink_url
-        }));
+        const tracks = [];
         
+        // Для каждого видео получаем детали
+        for (const item of searchResponse.data.items) {
+            const videoId = item.id.videoId;
+            
+            tracks.push({
+                title: item.snippet.title,
+                artist: item.snippet.channelTitle,
+                videoId: videoId,
+                url: `https://www.youtube.com/watch?v=${videoId}`,
+                thumbnail: item.snippet.thumbnails.default.url
+            });
+        }
+        
+        console.log(`✅ Найдено треков: ${tracks.length}`);
         res.json(tracks);
         
     } catch (error) {
-        console.log('SoundCloud ошибка, используем демо');
+        console.error('❌ Ошибка YouTube:', error.message);
+        res.json([]);
+    }
+});
 
-// Проверка сервера
 app.get('/', (req, res) => {
     res.json({ 
-        status: "✅ Pulse Vibe работает!",
-        port: process.env.PORT || 10000
+        status: "🎵 YouTube Music Bot работает!",
+        message: "Используй /search?q=rock для поиска"
     });
 });
 
-// ВАЖНО: используем порт от Render
-const port = process.env.PORT || 10000;
+const port = process.env.PORT || 3000;
 app.listen(port, '0.0.0.0', () => {
     console.log(`🚀 Сервер запущен на порту ${port}`);
 });
