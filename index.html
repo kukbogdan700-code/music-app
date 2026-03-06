@@ -62,17 +62,19 @@
             }
         }
 
-        function playTrack(url) {
-            let player = document.getElementById('audio-player');
-            if (!player) {
-                player = document.createElement('audio');
-                player.id = 'audio-player';
-                player.controls = true;
-                document.querySelector('.container').appendChild(player);
-            }
-            player.src = url;
-            player.play();
-        }
+       // Найди функцию playTrack в своем index.html и замени её на эту:
+function playTrack(trackUrl) {
+    let player = document.getElementById('audio-player');
+    if (!player) {
+        player = document.createElement('audio');
+        player.id = 'audio-player';
+        player.controls = true;
+        document.querySelector('.container').appendChild(player);
+    }
+    // Теперь мы просим сервер превратить ссылку в музыку
+    player.src =    'https://music-app-bnm4-mne6.onrender.com/stream?url=${encodeURIComponent(trackUrl)}';
+    player.play();
+}
     </script>
 </body>
 </html>
