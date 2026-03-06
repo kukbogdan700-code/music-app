@@ -26,42 +26,48 @@
 
     <script>
         async function searchMusic() {
-            const query = document.getElementById('searchInput').value;
-            const res = document.getElementById('results');
-            if (!query) return;
+    const query = document.getElementById('searchInput').value;
+    const res = document.getElementById('results');
+    if (!query) return;
 
-            res.innerHTML = '<p>Загрузка...</p>';
+    res.innerHTML = '<p>Загрузка...</p>';
 
-            try {
-                // Твой актуальный адрес на Render
-                const url = `https://music-app-bnm4-mne6.onrender.com/search?q=` + encodeURIComponent(query);
-                const response = await fetch(url);
-                const data = await response.json();
+    try {
+        // Добавляем случайное число к ссылке, чтобы Telegram НЕ брал старые данные из памяти
+        const url = `https://music-app-bnm4-mne6.onrender.com/search?q=${encodeURIComponent(query)}&t=${Date.now()}`;
+        
+        const response = await fetch(url);
+        
+        if (!response.ok) {
+            throw new Error('Сервер ответил с ошибкой');
+        }
+        
+        const data = await response.json();
 
-                res.innerHTML = '';
+        res.innerHTML = '';
 
-                if (!data || data.length === 0) {
-                    res.innerHTML = '<p>Ничего не найдено</p>';
-                    return;
-                }
-
-                data.forEach(track => {
-                    const html = `
-                        <div class="track">
-                            <div>
-                                <strong>${track.title}</strong><br>
-                                <small style="color: #aaa;">${track.artist}</small>
-                            </div>
-                            <button class="play-btn" onclick="playTrack('${track.url}')">Слушать</button>
-                        </div>
-                   ` ;
-                    res.insertAdjacentHTML('beforeend', html);
-                });
-            } catch (error) {
-                res.innerHTML = '<p style="color: red;">Ошибка связи с сервером</p>';
-            }
+        if (!data || data.length === 0) {
+            res.innerHTML = '<p>Ничего не найдено</p>';
+            return;
         }
 
+        data.forEach(track => {
+            const html = 
+                <div class="track">
+                    <div>
+                        <strong>${track.title}</strong><br>
+                        <small style="color: #aaa;">${track.artist}</small>
+                    </div>
+                    <button class="play-btn" onclick="playTrack('${track.url}')">Слушать</button>
+                </div>
+            ;
+            res.insertAdjacentHTML('beforeend', html);
+        });
+    } catch (error) {
+        console.error(error);
+        res.innerHTML = '<p style="color: red;">Ошибка: Сервер не отвечает. Попробуй еще раз через 10 секунд.</p>';
+    }
+}
        // Найди функцию playTrack в своем index.html и замени её на эту:
 function playTrack(trackUrl) {
     let player = document.getElementById('audio-player');
