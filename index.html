@@ -1,91 +1,75 @@
 <!DOCTYPE html>
-<html lang='ru'>
+<html lang="ru">
 <head>
-    <meta charset='utf-8'>
-    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-    <script src='https://telegram.org/js/telegram-web-app.js'></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pulse Vibe</title>
     <style>
-        body { background: #0f0f0f; color: white; font-family: sans-serif; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        h1 { color: #0088cc; margin-bottom: 20px; }
-        .search-box { display: flex; width: 100%; max-width: 400px; gap: 10px; margin-bottom: 20px; }
-        input { flex: 1; padding: 12px; border-radius: 10px; border: 1px solid #333; background: #1a1a1a; color: white; outline: none; }
-        button { background: #ff5500; color: white; border: none; padding: 12px 20px; border-radius: 10px; font-weight: bold; cursor: pointer; }
-        .results { width: 100%; max-width: 400px; }
-        .track { background: #1a1a1a; padding: 15px; border-radius: 10px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; border: 1px solid #222; }
-        .track-info { display: flex; flex-direction: column; }
-        .play-btn { background: #0088cc; padding: 8px 15px; font-size: 0.8em; border-radius: 8px; border: none; color: white; cursor: pointer; }
-        audio { width: 100%; margin-top: 20px; filter: invert(1); }
+        body { font-family: sans-serif; background-color: #1a1a1a; color: white; text-align: center; padding: 20px; }
+        .container { max-width: 400 -px; margin: auto; }
+        input { width: 70%; padding: 10px; border-radius: 5px; border: none; }
+        button { padding: 10px; border-radius: 5px; border: none; cursor: pointer; background: #ff9800; color: white; }
+        .track { background: #333; margin-top: 10px; padding: 15px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; text-align: left; }
+        .play-btn { background: #00bcd4; padding: 5px 15px; }
+        #results { margin-top: 20px; }
+        audio { width: 100%; margin-top: 20px; }
     </style>
 </head>
 <body>
-    <h1>Pulse Vibe 🎧</h1>
-    
-    <div class='search-box'>
-        <input type='text' id='searchInput' placeholder='Введите название...'>
-        <button onclick='searchMusic()'>Найти</button>
+    <div class="container">
+        <h1>Pulse Vibe 🎧</h1>
+        <input type="text" id="searchInput" placeholder="Какую музыку ищем?">
+        <button onclick="searchMusic()">Найти</button>
+        
+        <div id="results"></div>
     </div>
 
-    <div id='results' class='results'></div>
-    <audio id='audioPlayer' controls style='display:none;'></audio>
-
     <script>
-        var tg = window.Telegram.WebApp;
-        tg.expand();
-
         async function searchMusic() {
-    var query = document.getElementById('searchInput').value;
-    var res = document.getElementById('results');
-    if (!query) return;
+            const query = document.getElementById('searchInput').value;
+            const res = document.getElementById('results');
+            if (!query) return;
 
-    res.innerHTML = '<p style="color: #888;">Загрузка...</p>';
+            res.innerHTML = '<p>Загрузка...</p>';
 
-    try {
-        var url = 'https://music-app-bnm4-mne6.onrender.com/search?q=' + encodeURIComponent(query);
-        var response = await fetch(url);
-        var data = await response.json();
+            try {
+                // Твой актуальный адрес на Render
+                const url = 'https://music-app-bnm4-mne6.onrender.com/search?q=' + encodeURIComponent(query);
+                const response = await fetch(url);
+                const data = await response.json();
 
-        res.innerHTML = '';
+                res.innerHTML = '';
 
-        if (!data || data.length === 0) {
-            res.innerHTML = '<p>Ничего не найдено</p>';
-            return;
-        }
+                if (!data || data.length === 0) {
+                    res.innerHTML = '<p>Ничего не найдено</p>';
+                    return;
+                }
 
-        data.forEach(track => {
-            var html = 
-                <div class="track">
-                    <div class="track-info">
-                        <strong>${track.title}</strong>
-                        <span style="color: #888; font-size: 0.8em;">${track.artist}</span>
-                    </div>
-                    <button class="play-btn" onclick="playTrack('${track.url}')">Слушать</button>
-                </div>
-            ;
-            res.insertAdjacentHTML('beforeend', html);
-        });
-    } catch (error) {
-        res.innerHTML = '<p style="color: red;">Сервер не отвечает. Проверьте Render.com</p>';
-    }
-}
-
-function playTrack(url) {
-    let player = document.getElementById('audio-player');
-    if (!player) {
-        player = document.createElement('audio');
-        player.id = 'audio-player';
-        player.controls = true;
-        player.style.width = '100%';
-        player.style.marginTop = '20px';
-        document.querySelector('.container').appendChild(player);
-    }
-    player.src = url;
-    player.play();
-}
+                data.forEach(track => {
+                    const html = 
+                        <div class="track">
+                            <div>
+                                <strong>${track.title}</strong><br>
+                                <small style="color: #aaa;">${track.artist}</small>
+                            </div>
+                            <button class="play-btn" onclick="playTrack('${track.url}')">Слушать</button>
+                        </div>
+                    ;
+                    res.insertAdjacentHTML('beforeend', html);
+                });
+            } catch (error) {
+                res.innerHTML = '<p style="color: red;">Ошибка связи с сервером</p>';
+            }
         }
 
         function playTrack(url) {
-            var player = document.getElementById('audioPlayer');
-            player.style.display = 'block';
+            let player = document.getElementById('audio-player');
+            if (!player) {
+                player = document.createElement('audio');
+                player.id = 'audio-player';
+                player.controls = true;
+                document.querySelector('.container').appendChild(player);
+            }
             player.src = url;
             player.play();
         }
