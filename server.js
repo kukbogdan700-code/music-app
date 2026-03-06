@@ -6,23 +6,19 @@ const app = express();
 app.use(cors());
 
 app.get('/search', async (req, res) => {
-    const query = req.query.q;
+    const query = req.query.q || '';
+    console.log('Поиск для:', query);
+    
     try {
-        // Это реальный поиск через публичное API SoundCloud
-        const response = await axios.get(https://api-v2.soundcloud.com/search/queries?q=${encodeURIComponent(query)}&client_id=YOUR_CLIENT_ID&limit=5);
-        
-        // Пока мы просто возвращаем названия, чтобы убедиться, что поиск работает
-        const tracks = response.data.collection.map(item => ({
-            title: item.output
-        }));
-        
-        res.json(tracks);
+        // Тестовый список песен, чтобы проверить, что всё работает
+        const results = [
+            { title: query + " - Трек 1 (Demo)" },
+            { title: query + " - Трек 2 (Demo)" },
+            { title: query + " - Трек 3 (Demo)" }
+        ];
+        res.json(results);
     } catch (error) {
-        // Если API SoundCloud потребует ключ, вернем красивый тестовый список
-        res.json([
-            { title: query + " - Track 1 (Demo)" },
-            { title: query + " - Track 2 (Demo)" }
-        ]);
+        res.status(500).json({ error: "Ошибка сервера" });
     }
 });
 
