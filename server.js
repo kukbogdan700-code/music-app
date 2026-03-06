@@ -4,17 +4,14 @@ const cors = require('cors');
 const ytdl = require('@distube/ytdl-core');
 const app = express();
 
-// Разрешаем запросы с твоего сайта
 app.use(cors());
 
-// Твой рабочий ключ YouTube
 const YOUTUBE_API_KEY = 'AIzaSyDEGUB8bUNvwElyQEfTGD76tFlUXZrnWpg';
 
-// 1. Поиск видео через официальный YouTube API
 app.get('/search', async (req, res) => {
     const query = req.query.q;
     if (!query) return res.json([]);
-
+    
     try {
         const response = await axios.get('https://www.googleapis.com/youtube/v3/search', {
             params: {
@@ -23,7 +20,8 @@ app.get('/search', async (req, res) => {
                 type: 'video',
                 maxResults: 10,
                 key: YOUTUBE_API_KEY
-            }
+            },
+            timeout: 10000 // Ждем ответ от Google не более 10 сек
         });
         
         const tracks = response.data.items.map(item => ({
@@ -34,45 +32,31 @@ app.get('/search', async (req, res) => {
         
         res.json(tracks);
     } catch (error) {
-        console.error('Ошибка поиска:', error);
-        res.json([]);
+        console.error('Ошибка поиска:', error.message);
+        res.status(500).json([]); // Отдаем пустой массив вместо падения
     }
 });
 
-// 2. Стриминг аудио (теперь напрямую через "трубу" pipe)
 app.get('/audio/:videoId', async (req, res) => {
     const videoId = req.params.videoId;
-    
     try {
-        if (!ytdl.validateID(videoId)) {
-            return res.status(400).send('Неверный ID видео');
-        }
+        if (!ytdl.validateID(videoId)) return res.status(400).send('Invalid ID');
 
-        // Устанавливаем правильный тип контента для плеера
         res.setHeader('Content-Type', 'audio/mpeg');
-
-        // Запускаем поток данных напрямую от YouTube к пользователю
         ytdl(videoId, {
             filter: 'audioonly',
             quality: 'highestaudio',
-            highWaterMark: 1 << 25 
+            highWaterMark: 1 << 25
         }).pipe(res);
-
     } catch (error) {
-        console.error('Ошибка стриминга:', error);
-        if (!res.headersSent) {
-            res.status(500).send('Ошибка аудио');
-        }
+        console.error('Ошибка стриминга:', error.message);
+        if (!res.headersSent) res.status(500).send('Error');
     }
 });
 
-// Проверка работы сервера
-app.get('/', (req, res) => {
-    res.json({ status: "Pulse Vibe Server Online" });
-});
+app.get('/', (req, res) => res.json({ status: "OK" }));
 
-// Запуск на порту 10000 для Render
 const port = process.env.PORT || 10000;
 app.listen(port, '0.0.0.0', () => {
-    console.log(`Сервер Pulse Vibe запущен на порту ${port}`);
+    console.log(`Server started on port ${port}`);
 });
