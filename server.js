@@ -4,17 +4,19 @@ const SoundCloud = require('soundcloud-scraper');
 const app = express();
 const client = new SoundCloud.Client();
 
-// Настройка CORS для Telegram
+// 1. Оставляем только эту расширенную настройку CORS
 app.use(cors({
-    origin: '*' 
+    origin: '*',
+    methods: ['GET', 'POST'],
+    allowedHeaders: ['Content-Type']
 }));
 
-// Главная страница для проверки связи
+// 2. Главная страница
 app.get('/', (req, res) => {
     res.send('Сервер Pulse Vibe работает и готов искать музыку!');
 });
 
-// Поиск треков
+// 3. Поиск треков
 app.get('/search', async (req, res) => {
     const query = req.query.q;
     try {
@@ -31,7 +33,7 @@ app.get('/search', async (req, res) => {
     }
 });
 
-// Получение аудио-потока
+// 4. Получение аудио-потока
 app.get('/stream', async (req, res) => {
     const trackUrl = req.query.url;
     try {
@@ -43,8 +45,8 @@ app.get('/stream', async (req, res) => {
     }
 });
 
-// ЗАПУСК СЕРВЕРА (Обязательно!)
+// 5. Запуск сервера с правильными кавычками 
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, '0.0.0.0', () => {
-    console.log('Сервер Pulse Vibe запущен на порту ${PORT}');
+    console.log(`Сервер Pulse Vibe запущен на порту ${PORT}`);
 });
