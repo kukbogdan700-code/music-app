@@ -72,7 +72,7 @@ function playTrack(trackUrl) {
         document.querySelector('.container').appendChild(player);
     }
     // Теперь мы просим сервер превратить ссылку в музыку
-    player.src =    'https://music-app-bnm4-mne6.onrender.com/stream?url=${encodeURIComponent(trackUrl)}';
+    player.src =    `https://music-app-bnm4-mne6.onrender.com/stream?url=${encodeURIComponent(trackUrl)}`;
     player.play();
 }
     </script>
