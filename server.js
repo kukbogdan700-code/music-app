@@ -1,52 +1,64 @@
 const express = require('express');
+const axios = require('axios');
 const cors = require('cors');
-const SoundCloud = require('soundcloud-scraper');
 const app = express();
-const client = new SoundCloud.Client();
 
-// 1. Оставляем только эту расширенную настройку CORS
-app.use(cors({
-    origin: '*',
-    methods: ['GET', 'POST'],
-    allowedHeaders: ['Content-Type']
-}));
+app.use(cors());
+app.use(express.json());
 
-// 2. Главная страница
-app.get('/', (req, res) => {
-    res.send('Сервер Pulse Vibe работает и готов искать музыку!');
-});
+// ВАШ Client ID от SoundCloud
+const SOUNDCLOUD_CLIENT_ID = 'zIVNInsmJRApjUZSnEhz56WohoBMdUQU';
 
-// 3. Поиск треков
+// Поиск треков на SoundCloud
 app.get('/search', async (req, res) => {
     const query = req.query.q;
+    
+    if (!query) {
+        return res.json([]);
+    }
+    
     try {
-        const results = await client.search(query, 'track');
-        const tracks = results.slice(0, 5).map(track => ({
+        console.log('🔍 Поиск на SoundCloud:', query);
+        
+        // Получаем треки с SoundCloud
+        const response = await axios.get('https://api.soundcloud.com/tracks', {
+            params: {
+                q: query,
+                client_id: SOUNDCLOUD_CLIENT_ID,
+                limit: 15,
+                linked_partitioning: 1
+            }
+        });
+        
+        // Преобразуем в нужный формат
+        const tracks = response.data.collection.map(track => ({
             title: track.title,
-            artist: track.author.name,
-            url: track.url
+            artist: track.user.username,
+            url: track.stream_url + '?client_id=' + SOUNDCLOUD_CLIENT_ID,
+            duration: track.duration,
+            artwork: track.artwork_url || track.user.avatar_url
         }));
+        
+        console.log(`✅ Найдено треков: ${tracks.length}`);
         res.json(tracks);
+        
     } catch (error) {
-        console.error('Ошибка поиска:', error);
-        res.status(500).json({ error: 'Ошибка поиска' });
+        console.error('❌ Ошибка SoundCloud:', error.message);
+        res.status(500).json({ error: 'SoundCloud API error' });
     }
 });
 
-// 4. Получение аудио-потока
-app.get('/stream', async (req, res) => {
-    const trackUrl = req.query.url;
-    try {
-        const stream = await client.getStream(trackUrl);
-        stream.pipe(res);
-    } catch (error) {
-        console.error('Ошибка стриминга:', error);
-        res.status(500).send('Ошибка стриминга');
-    }
+app.get('/', (req, res) => {
+    res.json({ 
+        status: "Pulse Vibe SoundCloud Server работает!",
+        client_id: "zIVNInsmJRApjUZSnEhz56WohoBMdUQU",
+        endpoints: {
+            search: "/search?q=rock"
+        }
+    });
 });
 
-// 5. Запуск сервера с правильными кавычками 
-const PORT = process.env.PORT || 10000;
-app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Сервер Pulse Vibe запущен на порту ${PORT}`);
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`🚀 Сервер запущен на порту ${PORT}`);
 });
