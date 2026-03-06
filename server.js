@@ -6,29 +6,34 @@ const client = new SoundCloud.Client();
 
 app.use(cors());
 
+// Поиск треков
 app.get('/search', async (req, res) => {
     const query = req.query.q;
-    console.log('Поиск в SoundCloud:', query);
-
     try {
-        // Ищем треки по твоему запросу
         const results = await client.search(query, 'track');
-        
-        // Берем первые 5 результатов и превращаем их в удобный формат
         const tracks = results.slice(0, 5).map(track => ({
             title: track.title,
             artist: track.author.name,
-            url: track.url // Ссылка на страницу трека
+            url: track.url // Ссылка на страницу для стриминга
         }));
-
         res.json(tracks);
     } catch (error) {
-        console.error('Ошибка поиска:', error);
-        res.status(500).json({ error: 'Ошибка при поиске музыки' });
+        res.status(500).json({ error: 'Ошибка поиска' });
     }
 });
 
-const PORT = process.env.PORT || 3000;
+// Получение аудио-потока
+app.get('/stream', async (req, res) => {
+    const trackUrl = req.query.url;
+    try {
+        const stream = await client.getStream(trackUrl);
+        stream.pipe(res); // Передаем музыку прямо в плеер
+    } catch (error) {
+        res.status(500).send('Ошибка стриминга');
+    }
+});
+
+const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
-    console.log(`Сервер Pulse Vibe на порту ${PORT} готов к поиску!`);
+    console.log(`Сервер Pulse Vibe готов к работе!`);
 });
