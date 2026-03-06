@@ -2,8 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pulse Vibe - Музыка</title>
+    <title>Pulse Vibe - YouTube Music</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         body {
@@ -17,70 +16,51 @@
         h1 {
             color: #ff5500;
             text-align: center;
-            font-size: 32px;
-            margin-bottom: 20px;
         }
         .search-box {
             display: flex;
             gap: 10px;
-            margin-bottom: 20px;
+            margin: 20px 0;
         }
         input {
             flex: 1;
-            padding: 15px;
-            border-radius: 25px;
+            padding: 12px;
+            border-radius: 8px;
             background: #1a1a1a;
             color: white;
-            border: 2px solid #333;
-            font-size: 16px;
+            border: 1px solid #333;
         }
         button {
             background: #ff5500;
             color: white;
             border: none;
-            padding: 15px 25px;
-            border-radius: 25px;
-            font-size: 16px;
+            padding: 12px 20px;
+            border-radius: 8px;
             cursor: pointer;
-            font-weight: bold;
         }
         .track {
             background: #1a1a1a;
-            margin-bottom: 15px;
-            border-radius: 15px;
+            margin: 10px 0;
             padding: 15px;
-            border: 1px solid #333;
+            border-radius: 8px;
         }
         .track-title {
             font-weight: bold;
-            font-size: 16px;
             margin-bottom: 5px;
-            color: white;
         }
         .track-artist {
             color: #ff5500;
             font-size: 14px;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
         }
         audio {
             width: 100%;
-            border-radius: 8px;
-            margin-top: 5px;
+            margin-top: 10px;
         }
         .status {
-            text-align: center;
-            padding: 15px;
             color: #888;
-            background: #1a1a1a;
-            border-radius: 25px;
-            margin-bottom: 20px;
-        }
-        .error {
-            color: #ff4444;
             text-align: center;
-            padding: 20px;
-            background: #1a1a1a;
-            border-radius: 15px;
+            padding: 10px;
         }
     </style>
 </head>
@@ -88,76 +68,49 @@
     <h1>🎵 Pulse Vibe</h1>
     
     <div class="search-box">
-        <input type="text" id="searchInput" placeholder="Что послушать?" value="рок музыка">
+        <input type="text" id="searchInput" placeholder="Поиск музыки..." value="rock">
         <button id="searchBtn">Найти</button>
     </div>
     
-    <div id="status" class="status">⚡ Введите запрос для поиска</div>
+    <div id="status" class="status">⚡ Готов к поиску</div>
     <div id="results"></div>
 
     <script>
         const SERVER_URL = 'https://music-app-bnm4-mne6.onrender.com';
-        let currentAudio = null;
 
         async function searchMusic() {
-            const query = document.getElementById('searchInput').value.trim();
+            const query = document.getElementById('searchInput').value;
             const status = document.getElementById('status');
             const results = document.getElementById('results');
             
-            if (!query) {
-                status.innerHTML = '⚠️ Введите запрос';
-                return;
-            }
-            
-            status.innerHTML = '🔍 Ищем музыку...';
+            status.innerHTML = '🔍 Ищем...';
             results.innerHTML = '';
             
             try {
                 const response = await fetch(`${SERVER_URL}/search?q=${encodeURIComponent(query)}`);
                 const tracks = await response.json();
                 
-                if (!tracks || tracks.length === 0) {
+                if (tracks.length === 0) {
                     status.innerHTML = '😕 Ничего не найдено';
                     return;
                 }
                 
-                status.innerHTML = `✅ Найдено треков: ${tracks.length}`;
+                status.innerHTML = `✅ Найдено: ${tracks.length} треков`;
                 
                 tracks.forEach(track => {
-                    const trackDiv = document.createElement('div');
-                    trackDiv.className = 'track';
-                    
                     const audioUrl = `${SERVER_URL}/audio/${track.videoId}`;
-trackDiv.innerHTML = `
-                        <div class="track-title">🎵 ${track.title}</div>
-                        <div class="track-artist">👤 ${track.artist}</div>
-                        <audio controls preload="none">
-                            <source src="${audioUrl}" type="audio/mpeg">
-                            Ваш браузер не поддерживает аудио
-                        </audio>
+                    
+                    results.innerHTML += `
+                        <div class="track">
+                            <div class="track-title">${track.title}</div>
+                            <div class="track-artist">${track.artist}</div>
+                            <audio controls src="${audioUrl}"></audio>
+                        </div>
                     `;
-                    
-                    results.appendChild(trackDiv);
-                });
-                
-                // Добавляем обработчик для остановки предыдущего аудио
-                document.querySelectorAll('audio').forEach(audio => {
-                    audio.addEventListener('play', function() {
-                        if (currentAudio && currentAudio !== this) {
-                            currentAudio.pause();
-                        }
-                        currentAudio = this;
-                    });
-                    
-                    audio.addEventListener('error', function(e) {
-                        console.error('Ошибка аудио:', e);
-                        this.parentElement.innerHTML += '<div style="color:#ff4444; font-size:12px; margin-top:5px;">❌ Не удалось загрузить аудио</div>';
-                    });
                 });
                 
             } catch (error) {
-                console.error('Ошибка:', error);
-                status.innerHTML = '❌ Ошибка подключения к серверу';
+                status.innerHTML = '❌ Ошибка';
             }
         }
 
