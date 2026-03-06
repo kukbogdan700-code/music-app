@@ -1,190 +1,74 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pulse Vibe</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        body {
-            background: #0f0f0f;
-            color: white;
-            font-family: Arial, sans-serif;
-            padding: 20px;
-            max-width: 500px;
-            margin: 0 auto;
-            text-align: center;
-        }
-        h1 {
-            color: #ff5500;
-            font-size: 32px;
-            margin-bottom: 30px;
-        }
-        .search-box {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        input {
-            flex: 1;
-            padding: 12px;
-            border-radius: 8px;
-            background: #1a1a1a;
-            color: white;
-            border: 1px solid #333;
-            font-size: 16px;
-        }
-        button {
-            background: #ff5500;
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 8px;
-            font-size: 16px;
-            cursor: pointer;
-        }
-        button:hover {
-            background: #ff3300;
-        }
-        .track {
-            background: #1a1a1a;
-            padding: 15px;
-            margin-bottom: 10px;
-            border-radius: 8px;
-            text-align: left;
-        }
-        .track-title {
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-        .track-artist {
-            color: #ff5500;
-            font-size: 14px;
-            margin-bottom: 10px;
-        }
-        audio {
-            width: 100%;
-            border-radius: 8px;
-        }
-        .status {
-            padding: 10px;
-            margin-bottom: 20px;
-            color: #888;
-        }
-        .error {
-            color: #ff4444;
-            padding: 10px;
-            background: #1a1a1a;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
-    </style>
-</head>
-<body>
-    <h1>🎵 Pulse Vibe</h1>
+<div class="subtitle">Поиск музыки на YouTube</div>
     
     <div class="search-box">
-        <input type="text" id="searchInput" placeholder="Например: rock, pop, jazz..." value="rock">
+        <input type="text" id="searchInput" placeholder="Что ищем? (рок, поп, джаз...)" value="rock">
         <button id="searchBtn">Найти</button>
     </div>
     
-    <div id="status" class="status">⚡ Готов к поиску</div>
-    <div id="error" class="error" style="display: none;"></div>
+    <div id="status" class="status">⚡ Введите запрос для поиска</div>
     <div id="results"></div>
+    <div id="stats" class="stats"></div>
 
     <script>
-        const tg = window.Telegram.WebApp;
-        tg.expand();
-
         const SERVER_URL = 'https://music-app-bnm4-mne6.onrender.com';
-        
-        const searchBtn = document.getElementById('searchBtn');
-        const searchInput = document.getElementById('searchInput');
-        const resultsDiv = document.getElementById('results');
-        const statusDiv = document.getElementById('status');
-        const errorDiv = document.getElementById('error');
 
         async function searchMusic() {
-            const query = searchInput.value.trim();
+            const query = document.getElementById('searchInput').value.trim();
+            const status = document.getElementById('status');
+            const results = document.getElementById('results');
+            const stats = document.getElementById('stats');
             
             if (!query) {
-                showError('Введите запрос');
+                status.innerHTML = '⚠️ Введите запрос';
                 return;
             }
-
-            showStatus('🔍 Ищем на SoundCloud...');
-            hideError();
-            resultsDiv.innerHTML = '';
-
+            
+            status.innerHTML = '🔍 Ищем на YouTube...';
+            results.innerHTML = '';
+            stats.innerHTML = '';
+            
             try {
-                // Сначала проверим сам сервер
-                const checkResponse = await fetch(SERVER_URL);
-                const checkData = await checkResponse.json();
-                console.log('Сервер ответил:', checkData);
+                const response = await fetch(`${SERVER_URL}/search?q=${encodeURIComponent(query)}`);
+                const tracks = await response.json();
                 
-                // Теперь ищем музыку
-                const url = `${SERVER_URL}/search?q=${encodeURIComponent(query)}`;
-                console.log('Запрос поиска:', url);
-                
-                const response = await fetch(url);
-                const data = await response.json();
-console.log('Получены треки:', data);
-                
-                if (!data || data.length === 0) {
-                    showStatus('😕 Ничего не найдено');
+                if (!tracks || tracks.length === 0) {
+                    status.innerHTML = '😕 Ничего не найдено';
                     return;
                 }
                 
-                showStatus(`✅ Найдено треков: ${data.length}`);
+                status.innerHTML = `✅ Найдено на YouTube: ${tracks.length} видео`;
+                stats.innerHTML = `По запросу "${query}"`;
                 
-                data.forEach(track => {
-                    const trackDiv = document.createElement('div');
-                    trackDiv.className = 'track';
-                    trackDiv.innerHTML = `
-                        <div class="track-title">🎵 ${track.title || 'Без названия'}</div>
-                        <div class="track-artist">👤 ${track.artist || 'Неизвестен'}</div>
-                        <audio controls src="${track.url || ''}"></audio>
+                tracks.forEach(track => {
+                    results.innerHTML += `
+                        <div class="track">
+                            <div class="track-header">
+                                <img src="${track.thumbnail}" class="track-thumbnail" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2260%22 height=%2260%22 viewBox=%220 0 60 60%22><rect width=%2260%22 height=%2260%22 fill=%22%23333%22/><text x=%2215%22 y=%2235%22 fill=%22%23ff5500%22 font-size=%2220%22>🎵</text></svg>'">
+                                <div class="track-info">
+                                    <div class="track-title">${track.title}</div>
+                                    <div class="track-artist">${track.artist}</div>
+                                </div>
+                            </div>
+                            <a href="${track.url}" target="_blank" class="youtube-btn">
+                                ▶ Смотреть на YouTube
+                            </a>
+                        </div>
                     `;
-                    resultsDiv.appendChild(trackDiv);
                 });
                 
             } catch (error) {
                 console.error('Ошибка:', error);
-                showError('Ошибка подключения к серверу: ' + error.message);
+                status.innerHTML = '❌ Ошибка подключения к серверу';
             }
         }
 
-        function showStatus(msg) {
-            statusDiv.innerHTML = msg;
-            statusDiv.style.display = 'block';
-        }
-
-        function showError(msg) {
-            errorDiv.innerHTML = '❌ ' + msg;
-            errorDiv.style.display = 'block';
-            statusDiv.style.display = 'none';
-        }
-
-        function hideError() {
-            errorDiv.style.display = 'none';
-            statusDiv.style.display = 'block';
-        }
-
-        searchBtn.onclick = searchMusic;
-        searchInput.onkeypress = (e) => {
+        document.getElementById('searchBtn').onclick = searchMusic;
+        document.getElementById('searchInput').onkeypress = (e) => {
             if (e.key === 'Enter') searchMusic();
         };
 
-        // Проверка при загрузке
-        window.onload = async () => {
-            try {
-                const response = await fetch(SERVER_URL);
-                const data = await response.json();
-                showStatus('✅ Сервер подключен');
-                setTimeout(searchMusic, 1000);
-            } catch (error) {
-                showError('Сервер не отвечает');
-            }
+        window.onload = () => {
+            setTimeout(searchMusic, 1000);
         };
     </script>
 </body>
