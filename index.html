@@ -93,3 +93,19 @@
             player.src = trackUrl;
             player.play();
         }
+        // Проверка сервера при загрузке
+        window.addEventListener('load', function() {
+            fetch(SERVER_URL)
+                .then(response => response.text())
+                .then(data => {
+                    console.log('✅ Сервер работает:', data);
+                    document.getElementById('serverStatus').innerHTML = '✅ Сервер: работает';
+                })
+                .catch(error => {
+                    console.error('❌ Сервер не отвечает:', error);
+                    document.getElementById('serverStatus').innerHTML = '❌ Сервер: не отвечает';
+                });
+        });
+    </script>
+</body>
+</html>
