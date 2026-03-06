@@ -7,11 +7,15 @@ app.use(cors());
 
 const SOUNDCLOUD_CLIENT_ID = 'zIVNInsmJRApjUZSnEhz56WohoBMdUQU';
 
+// Поиск треков
 app.get('/search', async (req, res) => {
     const query = req.query.q;
     
+    console.log('🔍 Поиск:', query);
+    
     try {
-        const response = await axios.get('https://api.soundcloud.com/tracks', {
+        // Пробуем SoundCloud API
+        const response = await axios.get('https://api-v2.soundcloud.com/search/tracks', {
             params: {
                 q: query,
                 client_id: SOUNDCLOUD_CLIENT_ID,
@@ -19,23 +23,27 @@ app.get('/search', async (req, res) => {
             }
         });
         
-        const tracks = response.data.map(track => ({
+        const tracks = response.data.collection.map(track => ({
             title: track.title,
             artist: track.user.username,
-            url: track.stream_url + '?client_id=' + SOUNDCLOUD_CLIENT_ID
+            url: track.permalink_url
         }));
         
         res.json(tracks);
+        
     } catch (error) {
-        res.json([]);
-    }
-});
+        console.log('SoundCloud ошибка, используем демо');
 
+// Проверка сервера
 app.get('/', (req, res) => {
-    res.json({ status: "Pulse Vibe работает с SoundCloud!" });
+    res.json({ 
+        status: "✅ Pulse Vibe работает!",
+        port: process.env.PORT || 10000
+    });
 });
 
-const port = process.env.PORT || 3000;
-app.listen(port, () => {
-    console.log(`Server running on port ${port}`);
+// ВАЖНО: используем порт от Render
+const port = process.env.PORT || 10000;
+app.listen(port, '0.0.0.0', () => {
+    console.log(`🚀 Сервер запущен на порту ${port}`);
 });
