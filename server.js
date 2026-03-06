@@ -36,24 +36,23 @@ app.get('/search', async (req, res) => {
     }
 });
 
-// Получение аудио
+// Получение аудио-потока напрямую
 app.get('/audio/:videoId', async (req, res) => {
     const videoId = req.params.videoId;
     
     try {
-        const info = await ytdl.getInfo(videoId);
-        const format = ytdl.chooseFormat(info.formats, { filter: 'audioonly' });
-        res.redirect(format.url);
+        // Устанавливаем заголовки, чтобы плеер понял, что это аудио
+        res.setHeader('Content-Type', 'audio/mpeg');
+
+        // Используем pipe для передачи потока напрямую в браузер
+        ytdl(videoId, {
+            filter: 'audioonly',
+            quality: 'highestaudio',
+            highWaterMark: 1 << 25 // Увеличиваем буфер для плавной работы
+        }).pipe(res);
+
     } catch (error) {
-        res.status(500).json({ error: 'Ошибка аудио' });
+        console.error('Ошибка стриминга:', error);
+        res.status(500).send('Ошибка аудио');
     }
-});
-
-app.get('/', (req, res) => {
-    res.json({ status: "Сервер работает" });
-});
-
-const port = process.env.PORT || 3000;
-app.listen(port, '0.0.0.0', () => {
-    console.log(`Сервер запущен на порту ${port}`);
 });
