@@ -33,40 +33,54 @@
         tg.expand();
 
         async function searchMusic() {
-            var query = document.getElementById('searchInput').value;
-            var res = document.getElementById('results');
-            if (!query) return;
+    var query = document.getElementById('searchInput').value;
+    var res = document.getElementById('results');
+    if (!query) return;
 
-            res.innerHTML = '<p style="color: #888;">Загрузка...</p>';
+    res.innerHTML = '<p style="color: #888;">Загрузка...</p>';
 
-            try {
-                // Соединяем строки через плюс и одинарные кавычки
-                var url = 'https://music-app-bnm4-mne6.onrender.com/search?q=' + encodeURIComponent(query);
-                var response = await fetch(url);
-                var data = await response.json();
+    try {
+        var url = 'https://music-app-bnm4-mne6.onrender.com/search?q=' + encodeURIComponent(query);
+        var response = await fetch(url);
+        var data = await response.json();
 
-                res.innerHTML = '';
-                
-                if (!data || data.length === 0) {
-                    res.innerHTML = '<p>Ничего не найдено</p>';
-                    return;
-                }
+        res.innerHTML = '';
 
-                for (var i = 0; i < data.length; i++) {
-                    var track = data[i];
-                    var html = '';
-                    html += '<div class="track">';
-                    html += '<div class="track-info">';
-                    html += '<strong>' + track.title + '</strong>';
-                    html += '<span style="color: #888; font-size: 0.8em;">' + track.artist + '</span>';
-                    html += '</div>';
-                    html += '<button class="play-btn" onclick="playTrack(\'' + track.url + '\')">Слушать</button>';
-                    html += '</div>';
-                    res.innerHTML += html;
-                }
-            } catch (error) {
-                res.innerHTML = '<p style="color: red;">Сервер не отвечает. Проверьте Render.com</p>';
-            }
+        if (!data || data.length === 0) {
+            res.innerHTML = '<p>Ничего не найдено</p>';
+            return;
+        }
+
+        data.forEach(track => {
+            var html = 
+                <div class="track">
+                    <div class="track-info">
+                        <strong>${track.title}</strong>
+                        <span style="color: #888; font-size: 0.8em;">${track.artist}</span>
+                    </div>
+                    <button class="play-btn" onclick="playTrack('${track.url}')">Слушать</button>
+                </div>
+            ;
+            res.insertAdjacentHTML('beforeend', html);
+        });
+    } catch (error) {
+        res.innerHTML = '<p style="color: red;">Сервер не отвечает. Проверьте Render.com</p>';
+    }
+}
+
+function playTrack(url) {
+    let player = document.getElementById('audio-player');
+    if (!player) {
+        player = document.createElement('audio');
+        player.id = 'audio-player';
+        player.controls = true;
+        player.style.width = '100%';
+        player.style.marginTop = '20px';
+        document.querySelector('.container').appendChild(player);
+    }
+    player.src = url;
+    player.play();
+}
         }
 
         function playTrack(url) {
