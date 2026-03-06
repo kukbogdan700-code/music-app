@@ -46,7 +46,7 @@
                 }
 
                 data.forEach(track => {
-                    const html = 
+                    const html = `
                         <div class="track">
                             <div>
                                 <strong>${track.title}</strong><br>
@@ -54,7 +54,7 @@
                             </div>
                             <button class="play-btn" onclick="playTrack('${track.url}')">Слушать</button>
                         </div>
-                    ;
+                   ` ;
                     res.insertAdjacentHTML('beforeend', html);
                 });
             } catch (error) {
