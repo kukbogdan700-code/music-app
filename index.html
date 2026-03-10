@@ -2,136 +2,60 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Pulse Vibe - YouTube Music</title>
+    <title>Pulse Vibe</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body {
-            background: #0f0f0f;
-            color: white;
-            font-family: Arial, sans-serif;
-            padding: 20px;
-            max-width: 500px;
-            margin: 0 auto;
-        }
-        h1 {
-            color: #ff5500;
-            text-align: center;
-        }
-        .search-box {
-            display: flex;
-            gap: 10px;
-            margin: 20px 0;
-        }
-        input {
-            flex: 1;
-            padding: 12px;
-            border-radius: 8px;
-            background: #1a1a1a;
-            color: white;
-            border: 1px solid #333;
-        }
-        button {
-            background: #ff5500;
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-        }
-        .track {
-            background: #1a1a1a;
-            margin: 10px 0;
-            padding: 15px;
-            border-radius: 8px;
-        }
-        .track-title {
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-        .track-artist {
-            color: #ff5500;
-            font-size: 14px;
-            margin-bottom: 10px;
-        }
-        audio {
-            width: 100%;
-            margin-top: 10px;
-        }
-        .status {
-            color: #888;
-            text-align: center;
-            padding: 10px;
-        }
+        body { background: #0f0f0f; color: white; font-family: sans-serif; padding: 20px; }
+        .search-box { display: flex; gap: 10px; margin: 20px 0; }
+        input { flex: 1; padding: 12px; border-radius: 8px; background: #1a1a1a; color: white; border: 1px solid #333; }
+        button { background: #ff5500; color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; }
+        .track { background: #1a1a1a; margin: 10px 0; padding: 15px; border-radius: 8px; }
+        audio { width: 100%; margin-top: 10px; }
     </style>
 </head>
 <body>
-    <h1>🎵 Pulse Vibe</h1>
-    
+    <h1 style="text-align:center; color:#ff5500;">🎵 Pulse Vibe</h1>
     <div class="search-box">
         <input type="text" id="searchInput" placeholder="Поиск музыки..." value="rock">
         <button id="searchBtn">Найти</button>
     </div>
-    
-    <div id="status" class="status">⚡ Готов к поиску</div>
+    <div id="status" style="text-align:center; color:#888;">⚡ Готов</div>
     <div id="results"></div>
 
     <script>
         const SERVER_URL = 'https://music-app-bnm4-mne6.onrender.com';
 
-async function searchMusic() {
-    const query = document.getElementById('searchInput').value;
-    const status = document.getElementById('status');
-    const results = document.getElementById('results');
-    
-    // Останавливаем текущие плееры перед поиском
-    document.querySelectorAll('audio').forEach(el => {
-        el.pause();
-        el.src = "";
-    });
-
-    status.innerHTML = '🔍 Ищем...';
-    results.innerHTML = '';
-    
-    try {
-        // ИСПРАВЛЕНО: Добавлены обратные кавычки `
-        const response = await fetch(`${SERVER_URL}/search?q=${encodeURIComponent(query)}`);
-        const tracks = await response.json();
-        
-        if (tracks.length === 0) {
-            status.innerHTML = '😕 Ничего не найдено';
-            return;
-        }
-        
-        // ИСПРАВЛЕНО: Добавлены обратные кавычки 
-        status.innerHTML = `✅ Найдено: ${tracks.length} треков`;
-        
-        tracks.forEach(track => {
-            // ИСПРАВЛЕНО: Добавлены обратные кавычки `
-            const audioUrl = `${SERVER_URL}/audio/${track.videoId}`;
+        async function searchMusic() {
+            const query = document.getElementById('searchInput').value;
+            const status = document.getElementById('status');
+            const results = document.getElementById('results');
             
-            results.innerHTML += `
-                <div class="track">
-                    <div class="track-title">${track.title}</div>
-                    <div class="track-artist">${track.artist}</div>
-                    <audio controls preload="none" src="${audioUrl}"></audio>
-                </div>
-            `;
-        });
-        
-    } catch (error) {
-        console.error(error);
-        status.innerHTML = '❌ Ошибка';
-    }
-}
-
-document.getElementById('searchBtn').onclick = searchMusic;
-document.getElementById('searchInput').onkeypress = (e) => {
-    if (e.key === 'Enter') searchMusic();
-};
-
-window.onload = () => {
-    setTimeout(searchMusic, 1000);
-};
+            document.querySelectorAll('audio').forEach(el => { el.pause(); el.src = ""; });
+            status.innerHTML = '🔍 Ищем...';
+            results.innerHTML = '';
+            
+            try {
+                const response = await fetch(`${SERVER_URL}/search?q=${encodeURIComponent(query)}`);
+                const tracks = await response.json();
+                
+                if (tracks.length === 0) { status.innerHTML = '😕 Ничего не найдено'; return; }
+                status.innerHTML = `✅ Найдено: ${tracks.length}`;
+                
+                tracks.forEach(track => {
+                    const audioUrl = `${SERVER_URL}/audio/${track.videoId}`;
+                    results.innerHTML += `
+                        <div class="track">
+                            <div><b>${track.title}</b></div>
+                            <div style="color:#ff5500; font-size:14px;">${track.artist}</div>
+                            <audio controls preload="none" src="${audioUrl}"></audio>
+                        </div>`;
+                });
+            } catch (e) { status.innerHTML = '❌ Ошибка сервера'; }
+        }
+        document.getElementById('searchBtn').onclick = searchMusic;
     </script>
 </body>
 </html>
+
+
+пн, 9 мар. 2026 г., 00:17 Supercell <noreply@id.supercell.com>:
