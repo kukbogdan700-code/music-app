@@ -94,7 +94,7 @@ async function searchMusic() {
     
     try {
         // ИСПРАВЛЕНО: Добавлены обратные кавычки `
-        const response = await fetch(${SERVER_URL}/search?q=${encodeURIComponent(query)}`);
+        const response = await fetch(`${SERVER_URL}/search?q=${encodeURIComponent(query)}`);
         const tracks = await response.json();
         
         if (tracks.length === 0) {
