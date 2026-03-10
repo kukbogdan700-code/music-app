@@ -32,15 +32,34 @@ app.get('/search', async (req, res) => {
 });
 
 app.get('/audio/:videoId', async (req, res) => {
+    const videoId = req.params.videoId;
     try {
         res.setHeader('Content-Type', 'audio/mpeg');
-        ytdl(req.params.videoId, {
+        res.setHeader('Accept-Ranges', 'bytes'); // Важно для перемотки и старта
+
+        const stream = ytdl(videoId, {
             filter: 'audioonly',
             quality: 'highestaudio',
-            highWaterMark: 1 << 25
-        }).pipe(res);
-    } catch (e) {
-        res.status(500).send('Error');
+            highWaterMark: 1 << 25,
+            requestOptions: {
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                    'Referer': 'https://www.youtube.com/',
+                    'Origin': 'https://www.youtube.com/'
+                }
+            }
+        });
+
+        stream.pipe(res);
+
+        stream.on('error', (err) => {
+            console.error('Ошибка потока:', err.message);
+            if (!res.headersSent) res.status(500).end();
+        });
+
+    } catch (error) {
+        console.error('Ошибка сервера:', error.message);
+        res.status(500).end();
     }
 });
 
