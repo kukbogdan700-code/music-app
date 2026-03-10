@@ -2,7 +2,7 @@ process.env.YTDL_NO_UPDATE = 'true';
 const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
-const ytdl = require('@distube/ytdl-core'); // Используем актуальную библиотеку
+const ytdl = require('ytdl-core'); 
 const app = express();
 
 app.use(cors());
