@@ -78,50 +78,60 @@
     <script>
         const SERVER_URL = 'https://music-app-bnm4-mne6.onrender.com';
 
-        async function searchMusic() {
-            const query = document.getElementById('searchInput').value;
-            const status = document.getElementById('status');
-            const results = document.getElementById('results');
-            
-            status.innerHTML = '🔍 Ищем...';
-            results.innerHTML = '';
-            
-            try {
-                const response = await fetch(`${SERVER_URL}/search?q=${encodeURIComponent(query)}`);
-                const tracks = await response.json();
-                
-                if (tracks.length === 0) {
-                    status.innerHTML = '😕 Ничего не найдено';
-                    return;
-                }
-                
-                status.innerHTML = `✅ Найдено: ${tracks.length} треков`;
-                
-                tracks.forEach(track => {
-                    const audioUrl = `${SERVER_URL}/audio/${track.videoId}`;
-                    
-                    results.innerHTML += `
-                        <div class="track">
-                            <div class="track-title">${track.title}</div>
-                            <div class="track-artist">${track.artist}</div>
-                            <audio controls src="${audioUrl}"></audio>
-                        </div>
-                    `;
-                });
-                
-            } catch (error) {
-                status.innerHTML = '❌ Ошибка';
-            }
+async function searchMusic() {
+    const query = document.getElementById('searchInput').value;
+    const status = document.getElementById('status');
+    const results = document.getElementById('results');
+    
+    // Останавливаем текущие плееры перед поиском
+    document.querySelectorAll('audio').forEach(el => {
+        el.pause();
+        el.src = "";
+    });
+
+    status.innerHTML = '🔍 Ищем...';
+    results.innerHTML = '';
+    
+    try {
+        // ИСПРАВЛЕНО: Добавлены обратные кавычки `
+        const response = await fetch(${SERVER_URL}/search?q=${encodeURIComponent(query)}`);
+        const tracks = await response.json();
+        
+        if (tracks.length === 0) {
+            status.innerHTML = '😕 Ничего не найдено';
+            return;
         }
+        
+        // ИСПРАВЛЕНО: Добавлены обратные кавычки 
+        status.innerHTML = `✅ Найдено: ${tracks.length} треков`;
+        
+        tracks.forEach(track => {
+            // ИСПРАВЛЕНО: Добавлены обратные кавычки `
+            const audioUrl = `${SERVER_URL}/audio/${track.videoId}`;
+            
+            results.innerHTML += `
+                <div class="track">
+                    <div class="track-title">${track.title}</div>
+                    <div class="track-artist">${track.artist}</div>
+                    <audio controls preload="none" src="${audioUrl}"></audio>
+                </div>
+            `;
+        });
+        
+    } catch (error) {
+        console.error(error);
+        status.innerHTML = '❌ Ошибка';
+    }
+}
 
-        document.getElementById('searchBtn').onclick = searchMusic;
-        document.getElementById('searchInput').onkeypress = (e) => {
-            if (e.key === 'Enter') searchMusic();
-        };
+document.getElementById('searchBtn').onclick = searchMusic;
+document.getElementById('searchInput').onkeypress = (e) => {
+    if (e.key === 'Enter') searchMusic();
+};
 
-        window.onload = () => {
-            setTimeout(searchMusic, 1000);
-        };
+window.onload = () => {
+    setTimeout(searchMusic, 1000);
+};
     </script>
 </body>
 </html>
