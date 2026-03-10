@@ -53,3 +53,22 @@ app.get('/audio/:videoId', async (req, res) => {
                     'Origin': 'https://www.youtube.com/'
                 }
             }
+       });
+
+        stream.pipe(res);
+
+        stream.on('error', (err) => {
+            console.error('Ошибка стрима:', err.message);
+            if (!res.headersSent) res.status(500).end();
+        });
+
+    } catch (error) {
+        console.error('Ошибка сервера:', error.message);
+        if (!res.headersSent) res.status(500).end();
+    }
+});
+
+app.get('/', (req, res) => res.send('Pulse Vibe Server is Live!'));
+
+const port = process.env.PORT || 10000;
+app.listen(port, '0.0.0.0', () => console.log(Сервер запущен на порту ${port}));
